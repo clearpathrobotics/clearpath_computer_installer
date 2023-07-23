@@ -43,6 +43,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages\e[0m"
 sudo apt -y -qq update
-sudo apt -y -qq dist-upgrade
 echo -e "\e[32mDone: Updating packages\e[0m"
 echo ""
+echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
+echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
