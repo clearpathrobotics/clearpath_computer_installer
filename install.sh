@@ -23,11 +23,38 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
+
+
+# Check if Clearpath sources are already installed
+if [ -e /etc/apt/sources.list.d/ros2.list ]; then
+  echo -e "\e[33mWarn: ROS 2 sources exist, skipping\e[0m"
+else
+  sudo apt install software-properties-common -y
+  sudo add-apt-repository universe
+  sudo apt -y -qq update && sudo apt install curl -y
+  sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+  wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
+  sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
+  sudo apt -y -qq update
+  sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
+  # Check if sources were added
+  if [ ! -e /etc/apt/sources.list.d/ros2.list ]; then
+    echo -e "\e[31mError: Unable to add ROS 2 package server, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+echo -e "\e[32mDone: Setup ROS 2 package server\e[0m"
+echo ""
+
 echo -e "\e[94mSetup Clearpath Robotics package server\e[0m"
 
 # Check if Clearpath sources are already installed
 if [ -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
-  echo -e "\e[33mWarn: CPR sources exist, skipping\e[0m"
+  echo -e "\e[33mWarn: Clearpath Robotics sources exist, skipping\e[0m"
 else
   wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
   sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
@@ -41,9 +68,40 @@ fi
 echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
 echo ""
 
+
 echo -e "\e[94mUpdating packages\e[0m"
 sudo apt -y -qq update
 echo -e "\e[32mDone: Updating packages\e[0m"
 echo ""
+
+echo -e "\e[94mSetting up enviroment\e[0m"
+
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+sudo rosdep init
+rosdep update
+sudo wget https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O /etc/ros/rosdep/sources.list.d/50-clearpath.list
+rosdep update
+
+echo -e "\e[32mDone: Setting up enviroment\e[0m"
+echo ""
+
+
+echo -e "\e[94mInstalling clearpath_robot and micro_ros_agent from source\e[0m"
+
+cd ~/
+mkdir -p clearpath_robot/src
+cd clearpath_robot
+wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/dependencies.repos
+vcs import src < dependencies.repos
+rosdep install -r --from-paths src -i -y
+colcon build
+sudo colcon build --merge-install --install-base /opt/ros/humble
+
+echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
+echo ""
+
+
 echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
 echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
