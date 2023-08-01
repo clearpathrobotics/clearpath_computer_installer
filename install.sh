@@ -79,11 +79,31 @@ echo -e "\e[94mSetting up enviroment\e[0m"
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 
-sudo rosdep init
-rosdep update
-sudo wget https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O /etc/ros/rosdep/sources.list.d/50-clearpath.list
-rosdep update
+echo -e "\e[94mConfiguring rosdep\e[0m"
+if [ -e /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+  echo -e "\e[33mWarn: rosdep was initalized, skipping\e[0m"
+else
+  sudo rosdep -q init
+  if [ ! -e /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+    echo -e "\e[31mError: rosdep failed to initalize, exiting\e[0m"
+    exit 0
+  fi
+fi
 
+if [ -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+  echo -e "\e[33mWarn: CPR rosdeps exist, skipping\e[0m"
+else
+  sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O \
+    /etc/ros/rosdep/sources.list.d/50-clearpath.list
+  # Check if was added
+  if [ ! -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+    echo -e "\e[31mError: CPR rosdeps, exiting\e[0m"
+    exit 0
+  fi
+fi
+rosdep -q update
+echo -e "\e[32mDone: Configuring rosdep\e[0m"
+echo ""
 echo -e "\e[32mDone: Setting up enviroment\e[0m"
 echo ""
 
