@@ -31,7 +31,7 @@ if [ -e /etc/apt/sources.list.d/ros2.list ]; then
   echo -e "\e[33mWarn: ROS 2 sources exist, skipping\e[0m"
 else
   sudo apt install software-properties-common -y
-  sudo add-apt-repository universe
+  sudo add-apt-repository universe -y
   sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt install curl -y
   sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
@@ -116,8 +116,8 @@ cd clearpath_robot
 wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/dependencies.repos
 vcs import src < dependencies.repos
 rosdep install -r --from-paths src -i -y --rosdistro humble
-colcon build
-sudo colcon build --merge-install --install-base /opt/ros/humble
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+sudo su -c "colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
 echo ""
