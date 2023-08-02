@@ -115,7 +115,7 @@ mkdir -p clearpath_robot/src
 cd clearpath_robot
 wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/dependencies.repos
 vcs import src < dependencies.repos
-rosdep install -r --from-paths src -i -y
+rosdep install -r --from-paths src -i -y --rosdistro humble
 colcon build
 sudo colcon build --merge-install --install-base /opt/ros/humble
 
