@@ -115,8 +115,9 @@ cd clearpath_robot
 wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/dependencies.repos
 vcs import src < dependencies.repos
 rosdep install -r --from-paths src -i -y --rosdistro humble
-colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
-sudo su -c "colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Compile from source and install into /opt/ros/humble
+sudo sh -c "source /opt/ros/humble/setup.bash && colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
 echo ""
