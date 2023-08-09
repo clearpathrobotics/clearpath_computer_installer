@@ -35,9 +35,6 @@ else
   sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt install curl -y
   sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-
-  wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
-  sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
   sudo apt -y -qq update
   sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
   # Check if sources were added
