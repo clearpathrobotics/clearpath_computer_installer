@@ -122,6 +122,29 @@ sudo sh -c "source /opt/ros/humble/setup.bash && colcon build --merge-install --
 echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
 echo ""
 
+echo -e "\e[94mCreating setup folder\e[0m"
+sudo mkdir -p -m 666 /etc/clearpath/
+sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
+echo -e "\e[32mDone: Creating setup folder\e[0m"
+echo ""
+
+echo -e "\e[94mInstalling clearpath robot service\e[0m"
+source ~/.bashrc
+ros2 run clearpath_robot install
+echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+echo ""
+
+echo -e "\e[94mSetting up clearpath enviroment\e[0m"
+grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc
+source ~/.bashrc
+echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
+echo ""
+
+echo -e "\e[94mRemoving local temporary files\e[0m"
+cd ~/
+sudo rm -r clearpath_robot
+echo -e "\e[32mDone: Removing local temporary files\e[0m"
+echo ""
 
 echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
 echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
