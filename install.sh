@@ -23,6 +23,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+echo ""
+echo -e "\e[32mStarting Clearpath Computer Installer\e[0m"
+echo ""
+
+# Temporarily disable the blocking messages about restarting services in systems with needrestart installed
+if [ -d /etc/needrestart/conf.d ]; then
+  sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
+fi
+
 echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
 
 
@@ -145,6 +154,11 @@ cd ~/
 sudo rm -r clearpath_robot
 echo -e "\e[32mDone: Removing local temporary files\e[0m"
 echo ""
+
+# Reenable messages about restarting services in systems with needrestart installed
+if [ -d /etc/needrestart/conf.d ]; then
+  sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
+fi
 
 echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
 echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
