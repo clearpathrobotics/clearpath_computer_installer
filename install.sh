@@ -35,8 +35,6 @@ else
   sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt install curl -y
   sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-  sudo apt -y -qq update
-  sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
   # Check if sources were added
   if [ ! -e /etc/apt/sources.list.d/ros2.list ]; then
     echo -e "\e[31mError: Unable to add ROS 2 package server, exiting\e[0m"
@@ -66,9 +64,10 @@ echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
 echo ""
 
 
-echo -e "\e[94mUpdating packages\e[0m"
+echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-echo -e "\e[32mDone: Updating packages\e[0m"
+sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
+echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
 echo -e "\e[94mSetting up enviroment\e[0m"
