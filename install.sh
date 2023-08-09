@@ -73,6 +73,8 @@ echo ""
 echo -e "\e[94mSetting up enviroment\e[0m"
 grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
 source ~/.bashrc
+echo -e "\e[32mDone: Setting up enviroment\e[0m"
+echo ""
 
 echo -e "\e[94mConfiguring rosdep\e[0m"
 if [ -e /etc/ros/rosdep/sources.list.d/20-default.list ]; then
@@ -99,9 +101,6 @@ fi
 rosdep -q update
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
-echo -e "\e[32mDone: Setting up enviroment\e[0m"
-echo ""
-
 
 echo -e "\e[94mInstalling clearpath_robot and micro_ros_agent from source\e[0m"
 
