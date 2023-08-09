@@ -71,8 +71,7 @@ echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
 echo -e "\e[94mSetting up enviroment\e[0m"
-
-echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
 source ~/.bashrc
 
 echo -e "\e[94mConfiguring rosdep\e[0m"
