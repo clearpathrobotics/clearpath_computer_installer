@@ -61,7 +61,7 @@ if [ -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
   echo -e "\e[33mWarn: Clearpath Robotics sources exist, skipping\e[0m"
 else
   wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
-  sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
+  sudo bash -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
   # Check if sources were added
   if [ ! -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
     echo -e "\e[31mError: Unable to add Clearpath Robotics package server, exiting\e[0m"
@@ -126,7 +126,7 @@ vcs import src < dependencies.repos
 rosdep install -r --from-paths src -i -y --rosdistro humble
 
 # Compile from source and install into /opt/ros/humble
-sudo sh -c "source /opt/ros/humble/setup.bash && colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
+sudo bash -c "source /opt/ros/humble/setup.bash && colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
 echo ""
