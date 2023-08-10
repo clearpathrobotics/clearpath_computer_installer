@@ -140,8 +140,13 @@ echo ""
 echo -e "\e[94mInstalling clearpath robot service\e[0m"
 source ~/.bashrc
 ros2 run clearpath_robot install
-echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
-echo ""
+if [ $? -eq 0 ]; then
+  echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+  echo ""
+else
+    echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
+    exit 0
+fi
 
 echo -e "\e[94mSetting up clearpath enviroment\e[0m"
 grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc
