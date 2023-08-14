@@ -130,6 +130,11 @@ sudo bash -c "source /opt/ros/humble/setup.bash && colcon build --merge-install 
 echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
 echo ""
 
+echo -e "\e[94mInstalling udev rule\e[0m"
+sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/clearpath_robot/debian/udev -O /etc/udev/rules.d/50-clearpath-robot.rules
+echo -e "\e[32mDone: Installing udev rule\e[0m"
+echo ""
+
 echo -e "\e[94mCreating setup folder\e[0m"
 sudo mkdir -p -m 666 /etc/clearpath/
 sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
