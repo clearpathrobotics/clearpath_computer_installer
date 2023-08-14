@@ -34,8 +34,7 @@ fi
 
 echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
 
-
-# Check if Clearpath sources are already installed
+# Check if ROS 2 sources are already installed
 if [ -e /etc/apt/sources.list.d/ros2.list ]; then
   echo -e "\e[33mWarn: ROS 2 sources exist, skipping\e[0m"
 else
