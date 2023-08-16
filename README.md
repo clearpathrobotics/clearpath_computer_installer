@@ -1,6 +1,8 @@
 # clearpath_computer_installer
 
-Contains a script to add the Clearpath Package server to a system that does not have it added already.  It only targets ROS 2 Humble.
+Contains a script to set up a Clearpath robot computer for ROS 2 Humble. For full instructions visit https://docs.clearpathrobotics.com/docs/ros/installation/robot.
+
+This script includes setting of ROS 2 and Clearpath package servers, installing ROS 2 and Clearpath Robot packages and installing the Clearpath Robot Service.
 
 ## Usage
 ```
