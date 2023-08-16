@@ -74,7 +74,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
+sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
@@ -115,19 +115,18 @@ rosdep -q update
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
-echo -e "\e[94mInstalling clearpath_robot and micro_ros_agent from source\e[0m"
+echo -e "\e[94mInstalling  micro_ros_agent from source\e[0m"
 
 cd ~/
-mkdir -p clearpath_robot/src
-cd clearpath_robot
-wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/dependencies.repos
-vcs import src < dependencies.repos
+mkdir -p micro_ros_ws/src
+cd micro_ros_ws/src
+git clone https://github.com/micro-ROS/micro-ROS-Agent.git -b humble
+cd ..
 rosdep install -r --from-paths src -i -y --rosdistro humble
+source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
 
-# Compile from source and install into /opt/ros/humble
-sudo bash -c "source /opt/ros/humble/setup.bash && colcon build --merge-install --install-base /opt/ros/humble --cmake-args -DCMAKE_BUILD_TYPE=Release"
-
-echo -e "\e[32mDone: Installing clearpath_robot and micro_ros_agent from source\e[0m"
+echo -e "\e[32mDone: Installing micro_ros_agent from source\e[0m"
 echo ""
 
 echo -e "\e[94mInstalling udev rule\e[0m"
@@ -156,12 +155,6 @@ echo -e "\e[94mSetting up clearpath enviroment\e[0m"
 grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc
 source ~/.bashrc
 echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
-echo ""
-
-echo -e "\e[94mRemoving local temporary files\e[0m"
-cd ~/
-sudo rm -r clearpath_robot
-echo -e "\e[32mDone: Removing local temporary files\e[0m"
 echo ""
 
 # Reenable messages about restarting services in systems with needrestart installed
