@@ -135,7 +135,7 @@ echo -e "\e[32mDone: Installing udev rule\e[0m"
 echo ""
 
 echo -e "\e[94mCreating setup folder\e[0m"
-sudo mkdir -p -m 666 /etc/clearpath/
+sudo mkdir -p -m 777 /etc/clearpath/
 sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
 echo -e "\e[32mDone: Creating setup folder\e[0m"
 echo ""
