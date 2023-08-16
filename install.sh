@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -e
 # Software License Agreement (BSD)
 #
 # Author    Tony Baltovski <tbaltovski@clearpathrobotics.com>

@@ -4,5 +4,5 @@ Contains a script to add the Clearpath Package server to a system that does not 
 
 ## Usage
 ```
-wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/install.sh && bash -eu install.sh
+wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/install.sh && bash -e install.sh
 ```
