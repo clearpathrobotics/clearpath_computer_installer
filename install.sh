@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -e
 # Software License Agreement (BSD)
 #
 # Author    Tony Baltovski <tbaltovski@clearpathrobotics.com>
@@ -23,14 +23,44 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+echo ""
+echo -e "\e[32mStarting Clearpath Computer Installer\e[0m"
+echo ""
+
+# Temporarily disable the blocking messages about restarting services in systems with needrestart installed
+if [ -d /etc/needrestart/conf.d ]; then
+  sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
+fi
+
+echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
+
+# Check if ROS 2 sources are already installed
+if [ -e /etc/apt/sources.list.d/ros2.list ]; then
+  echo -e "\e[33mWarn: ROS 2 sources exist, skipping\e[0m"
+else
+  sudo apt -y -qq install software-properties-common
+  sudo add-apt-repository universe -y
+  sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
+  sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+  # Check if sources were added
+  if [ ! -e /etc/apt/sources.list.d/ros2.list ]; then
+    echo -e "\e[31mError: Unable to add ROS 2 package server, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+echo -e "\e[32mDone: Setup ROS 2 package server\e[0m"
+echo ""
+
 echo -e "\e[94mSetup Clearpath Robotics package server\e[0m"
 
 # Check if Clearpath sources are already installed
 if [ -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
-  echo -e "\e[33mWarn: CPR sources exist, skipping\e[0m"
+  echo -e "\e[33mWarn: Clearpath Robotics sources exist, skipping\e[0m"
 else
   wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
-  sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
+  sudo bash -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
   # Check if sources were added
   if [ ! -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
     echo -e "\e[31mError: Unable to add Clearpath Robotics package server, exiting\e[0m"
@@ -41,9 +71,97 @@ fi
 echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
 echo ""
 
-echo -e "\e[94mUpdating packages\e[0m"
+
+echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-echo -e "\e[32mDone: Updating packages\e[0m"
+sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot -y
+echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
+
+echo -e "\e[94mSetting up enviroment\e[0m"
+grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
+source ~/.bashrc
+echo -e "\e[32mDone: Setting up enviroment\e[0m"
+echo ""
+
+echo -e "\e[94mConfiguring rosdep\e[0m"
+
+# Check if rosdep sources are already installed
+if [ -e /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+  echo -e "\e[33mWarn: rosdep was initalized, skipping\e[0m"
+else
+  sudo rosdep -q init
+  # Check if sources were added
+  if [ ! -e /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+    echo -e "\e[31mError: rosdep failed to initalize, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+# Check if Clearpath rosdep sources are already installed
+if [ -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+  echo -e "\e[33mWarn: CPR rosdeps exist, skipping\e[0m"
+else
+  sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O \
+    /etc/ros/rosdep/sources.list.d/50-clearpath.list
+  # Check if sources were added
+  if [ ! -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+    echo -e "\e[31mError: CPR rosdeps, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+rosdep -q update
+echo -e "\e[32mDone: Configuring rosdep\e[0m"
+echo ""
+
+echo -e "\e[94mInstalling  micro_ros_agent from source\e[0m"
+
+cd ~/
+mkdir -p micro_ros_ws/src
+cd micro_ros_ws/src
+git clone https://github.com/micro-ROS/micro-ROS-Agent.git -b humble
+cd ..
+rosdep install -r --from-paths src -i -y --rosdistro humble
+source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
+
+echo -e "\e[32mDone: Installing micro_ros_agent from source\e[0m"
+echo ""
+
+echo -e "\e[94mInstalling udev rule\e[0m"
+sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/clearpath_robot/debian/udev -O /etc/udev/rules.d/50-clearpath-robot.rules
+echo -e "\e[32mDone: Installing udev rule\e[0m"
+echo ""
+
+echo -e "\e[94mCreating setup folder\e[0m"
+sudo mkdir -p -m 777 /etc/clearpath/
+sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
+echo -e "\e[32mDone: Creating setup folder\e[0m"
+echo ""
+
+echo -e "\e[94mInstalling clearpath robot service\e[0m"
+source ~/.bashrc
+ros2 run clearpath_robot install
+if [ $? -eq 0 ]; then
+  echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+  echo ""
+else
+    echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
+    exit 0
+fi
+
+echo -e "\e[94mSetting up clearpath enviroment\e[0m"
+grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc
+source ~/.bashrc
+echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
+echo ""
+
+# Reenable messages about restarting services in systems with needrestart installed
+if [ -d /etc/needrestart/conf.d ]; then
+  sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
+fi
+
 echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
 echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
+echo -e "\e[94mTo start the robot service run:\e[0m sudo systemctl daemon-reload && sudo systemctl start clearpath-robot.service"
