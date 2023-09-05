@@ -115,25 +115,6 @@ rosdep -q update
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
-echo -e "\e[94mInstalling  micro_ros_agent from source\e[0m"
-
-cd ~/
-mkdir -p micro_ros_ws/src
-cd micro_ros_ws/src
-git clone https://github.com/micro-ROS/micro-ROS-Agent.git -b humble
-cd ..
-rosdep install -r --from-paths src -i -y --rosdistro humble
-source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
-source install/setup.bash
-
-echo -e "\e[32mDone: Installing micro_ros_agent from source\e[0m"
-echo ""
-
-echo -e "\e[94mInstalling udev rule\e[0m"
-sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_robot/main/clearpath_robot/debian/udev -O /etc/udev/rules.d/50-clearpath-robot.rules
-echo -e "\e[32mDone: Installing udev rule\e[0m"
-echo ""
-
 echo -e "\e[94mCreating setup folder\e[0m"
 sudo mkdir -p -m 777 /etc/clearpath/
 sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
