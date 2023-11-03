@@ -32,6 +32,9 @@ if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
 fi
 
+# Set front end to non-interactive to avoid prompts while installing packages
+export DEBIAN_FRONTEND=noninteractive
+
 echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
 
 # Check if ROS 2 sources are already installed
@@ -74,7 +77,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot -y
+sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
