@@ -115,6 +115,16 @@ rosdep -q update
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
+
+echo -e "\e[94mSetting up groups\e[0m"
+sudo addgroup flirimaging
+sudo usermod -a -G flirimaging administrator
+sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& usbcore.usbfs_memory_mb=1000/' /etc/default/grub
+sudo update-grub
+echo -e "\e[32mDone: Setting up groups\e[0m"
+echo ""
+
+
 echo -e "\e[94mCreating setup folder\e[0m"
 sudo mkdir -p -m 777 /etc/clearpath/
 sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
