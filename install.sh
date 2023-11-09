@@ -23,6 +23,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Set front end to non-interactive to avoid prompts while installing packages
+export DEBIAN_FRONTEND=noninteractive
+
 echo ""
 echo -e "\e[32mStarting Clearpath Computer Installer\e[0m"
 echo ""
