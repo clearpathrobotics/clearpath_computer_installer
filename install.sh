@@ -132,7 +132,6 @@ else
   echo "Adding user:${USER} to flirimaging group";
   sudo usermod -a -G flirimaging ${USER};
 fi
-break;;
 
 
 val=$(< /sys/module/usbcore/parameters/usbfs_memory_mb)
