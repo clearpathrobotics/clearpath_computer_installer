@@ -188,6 +188,7 @@ else
     echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
     exit 0
 fi
+sudo systemctl enable clearpath-robot
 
 echo -e "\e[94mSetting up clearpath enviroment\e[0m"
 sudo su - $installer_user bash -c 'grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc'
