@@ -38,7 +38,6 @@ else
     installer_user="$(whoami)"
     echo "Running as: ${installer_user}"
 fi
-
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
 if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
