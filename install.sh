@@ -91,7 +91,7 @@ echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
 echo -e "\e[94mSetting up enviroment\e[0m"
-su - $installer_user -c 'grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc'
+sudo su - $installer_user -c 'grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc'
 source /opt/ros/humble/setup.bash
 echo -e "\e[32mDone: Setting up enviroment\e[0m"
 echo ""
@@ -123,7 +123,7 @@ else
   fi
 fi
 
-su - $installer_user -c 'rosdep -q update'
+sudo su - $installer_user -c 'rosdep -q update'
 
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
@@ -180,7 +180,7 @@ echo -e "\e[32mDone: Creating setup folder\e[0m"
 echo ""
 
 echo -e "\e[94mInstalling clearpath robot service\e[0m"
-su - $installer_user -c 'source /opt/ros/humble/setup.bash; ros2 run clearpath_robot install'
+sudo su - $installer_user -c 'source /opt/ros/humble/setup.bash; ros2 run clearpath_robot install'
 
 if [ $? -eq 0 ]; then
   echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
@@ -191,7 +191,7 @@ else
 fi
 
 echo -e "\e[94mSetting up clearpath enviroment\e[0m"
-su - $installer_user -c 'grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc'
+sudo su - $installer_user -c 'grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc'
 echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
 echo ""
 
