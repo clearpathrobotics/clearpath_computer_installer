@@ -27,6 +27,17 @@ echo ""
 echo -e "\e[32mStarting Clearpath Computer Installer\e[0m"
 echo ""
 
+# Check if the script is run as root
+if [ "$EUID" -eq 0 ]; then
+    echo "You are the root user, setting installer_user to administrator."
+    installer_user="administrator"
+elif [ "$(whoami)" = "administrator" ]; then
+    echo "You are the user 'administrator'."
+    installer_user="administrator"
+else
+    echo "You are a other user."
+    installer_user="$(whoami)"
+fi
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
 if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
@@ -125,12 +136,12 @@ else
   echo "Adding flirimaging group";
   sudo addgroup flirimaging;
 fi
-if id -nGz "$USER" | grep -qzxF "flirimaging";
+if id -nGz "$installer_user" | grep -qzxF "flirimaging";
 then
-  echo "User:${USER} is already in flirimaging group";
+  echo "User:${installer_user} is already in flirimaging group";
 else
-  echo "Adding user:${USER} to flirimaging group";
-  sudo usermod -a -G flirimaging ${USER};
+  echo "Adding user:${installer_user} to flirimaging group";
+  sudo usermod -a -G flirimaging ${installer_user};
 fi
 
 
