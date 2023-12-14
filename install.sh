@@ -88,8 +88,7 @@ echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
 echo -e "\e[94mSetting up enviroment\e[0m"
-sudo su - $installer_user bash -c 'grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc'
-source /opt/ros/humble/setup.bash
+sudo su - $installer_user bash -c 'grep -qxF "source /opt/ros/humble/setup.bash" ~/.bashrc || echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc'
 echo -e "\e[32mDone: Setting up enviroment\e[0m"
 echo ""
 
@@ -188,7 +187,7 @@ else
 fi
 
 echo -e "\e[94mSetting up clearpath enviroment\e[0m"
-sudo su - $installer_user bash -c 'grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc'
+sudo su - $installer_user bash -c 'grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc'
 echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
 echo ""
 
