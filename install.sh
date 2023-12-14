@@ -32,7 +32,7 @@ echo ""
 
 # Check if the script is run as root
 if [ "$EUID" -eq 0 ]; then
-    echo "You are the root user, setting installer_user to administrator."
+    echo "You are the root user, setting installer_user to administrator which is default on all Clearpath Platforms."
     installer_user="administrator"
 else
     installer_user="$(whoami)"
