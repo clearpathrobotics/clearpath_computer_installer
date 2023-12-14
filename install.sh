@@ -31,12 +31,9 @@ echo ""
 if [ "$EUID" -eq 0 ]; then
     echo "You are the root user, setting installer_user to administrator."
     installer_user="administrator"
-elif [ "$(whoami)" = "administrator" ]; then
-    echo "You are the user 'administrator'."
-    installer_user="administrator"
 else
-    echo "You are a other user."
     installer_user="$(whoami)"
+    echo "Running as: ${installer_user}"
 fi
 
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
