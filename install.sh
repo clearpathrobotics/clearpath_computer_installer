@@ -30,6 +30,14 @@ echo ""
 echo -e "\e[32mStarting Clearpath Computer Installer\e[0m"
 echo ""
 
+# Check if the script is run as root
+if [ "$EUID" -eq 0 ]; then
+    echo "You are the root user, setting user to administrator which is default on all Clearpath Platforms."
+    installer_user="administrator"
+else
+    installer_user="$(whoami)"
+    echo "Running as user: ${installer_user}"
+fi
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
 if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
@@ -82,8 +90,7 @@ echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
 echo -e "\e[94mSetting up enviroment\e[0m"
-grep -qxF 'source /opt/ros/humble/setup.bash' ~/.bashrc || echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
-source /opt/ros/humble/setup.bash
+sudo su - $installer_user bash -c 'grep -qxF "source /opt/ros/humble/setup.bash" ~/.bashrc || echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc'
 echo -e "\e[32mDone: Setting up enviroment\e[0m"
 echo ""
 
@@ -114,7 +121,8 @@ else
   fi
 fi
 
-rosdep -q update
+sudo su - $installer_user bash -c 'rosdep -q update'
+
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
@@ -158,12 +166,12 @@ else
   echo "Adding flirimaging group";
   sudo addgroup flirimaging;
 fi
-if id -nGz "$USER" | grep -qzxF "flirimaging";
+if id -nGz "$installer_user" | grep -qzxF "flirimaging";
 then
-  echo "User:${USER} is already in flirimaging group";
+  echo "User:${installer_user} is already in flirimaging group";
 else
-  echo "Adding user:${USER} to flirimaging group";
-  sudo usermod -a -G flirimaging ${USER};
+  echo "Adding user:${installer_user} to flirimaging group";
+  sudo usermod -a -G flirimaging ${installer_user};
 fi
 
 
@@ -193,8 +201,8 @@ echo -e "\e[32mDone: Setting up groups\e[0m"
 echo ""
 
 echo -e "\e[94mInstalling clearpath robot service\e[0m"
-source /opt/ros/humble/setup.bash
-ros2 run clearpath_robot install
+sudo su - $installer_user bash -c 'source /opt/ros/humble/setup.bash; ros2 run clearpath_robot install'
+
 if [ $? -eq 0 ]; then
   echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
   echo ""
@@ -205,7 +213,7 @@ fi
 sudo systemctl enable clearpath-robot
 
 echo -e "\e[94mSetting up clearpath enviroment\e[0m"
-grep -qxF 'source /etc/clearpath/setup.bash' ~/.bashrc || echo 'source /etc/clearpath/setup.bash' >> ~/.bashrc
+sudo su - $installer_user bash -c 'grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc'
 echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
 echo ""
 
