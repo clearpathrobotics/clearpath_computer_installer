@@ -119,6 +119,36 @@ echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
 
+echo -e "\e[94mConfiguring Clearpath Setup\e[0m"
+# Check if Clearpath folder exists
+if [ -d /etc/clearpath/ ]; then
+  echo -e "\e[33mWarn: Clearpath folder exist, skipping\e[0m"
+else
+  echo -e "\e[94mCreating setup folder\e[0m"
+  sudo mkdir -p -m 777 /etc/clearpath/
+  # Check if directory was created
+  if [ !  -d /etc/clearpath/ ]; then
+    echo -e "\e[31mError: Clearpath folder setup, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+# Check if Clearpath Config YAML exists
+if [ -e /etc/clearpath/robot.yaml ]; then
+  echo -e "\e[33mWarn: Cleaprath Robot YAML exists, skipping\e[0m"
+else
+  echo -e "\e[94mCreating default robot YAML \e[0m"
+  sudo cp /opt/ros/humble/share/clearpath_config/sample/a200_default.yaml /etc/clearpath/robot.yaml
+  # Check if sources were added
+  if [ ! -e /etc/clearpath/robot.yaml ]; then
+    echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
+    exit 0
+  fi
+fi
+
+echo -e "\e[32mDone: Configuring Clearpath Setup\e[0m"
+echo ""
+
 echo -e "\e[94mSetting up groups\e[0m"
 
 if [ $(getent group flirimaging) ];
@@ -160,13 +190,6 @@ else
 fi
 
 echo -e "\e[32mDone: Setting up groups\e[0m"
-echo ""
-
-
-echo -e "\e[94mCreating setup folder\e[0m"
-sudo mkdir -p -m 777 /etc/clearpath/
-sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/main/clearpath_config/sample/a200/a200_default.yaml -O /etc/clearpath/robot.yaml
-echo -e "\e[32mDone: Creating setup folder\e[0m"
 echo ""
 
 echo -e "\e[94mInstalling clearpath robot service\e[0m"
