@@ -214,6 +214,24 @@ if [ -d /etc/needrestart/conf.d ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
 fi
 
+echo -e "\e[94mConfiguring network service, if needed\e[0m"
+# Check if the service file exists
+if [ -e "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service" ]; then
+    # Check if TimeoutStartSec is present in the service file
+    if grep -q "TimeoutStartSec=2sec" "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"; then
+        echo "TimeoutStartSec is already present in /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+    else
+        # Add TimeoutStartSec after RemainAfterExit=yes
+        sudo sed -i '/RemainAfterExit=yes/a \'"TimeoutStartSec=2sec"'' "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+        echo "TimeoutStartSec added to /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+    fi
+else
+    echo "Service file /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service not found."
+fi
+
+echo -e "\e[32mDone: Configuring network service\e[0m"
+echo ""
+
 echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
 echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
 echo -e "\e[94mTo start the robot service run:\e[0m sudo systemctl daemon-reload && sudo systemctl start clearpath-robot.service"
