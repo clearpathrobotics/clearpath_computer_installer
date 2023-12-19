@@ -23,6 +23,87 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+
+prompt_option() {
+  # ask the user to select from a numbered list of options & return their selection
+  # $1 is the variable into which the result is returned
+  # $2 should be the question to ask the user as a prompt
+  # $3+ should be the available options
+
+  local __resultvar=$1
+  shift
+  local __prompt=$1
+  shift
+  local __n_options=$#
+
+  echo -e "\e[39m$__prompt\e[0m"
+  for (( i=1; $i<=$__n_options; i++ ));
+  do
+    opt=${!i}
+    echo -e "[$i] \e[32m$opt\e[0m"
+  done
+
+  read answer
+  eval $__resultvar="'$answer'"
+}
+
+prompt_YESno() {
+  # as the user a Y/n question
+  # $1 is the variable into which the answer is saved as either "n" or "y"
+  # $2 is the question to ask
+
+  local __resultvar=$1
+  local __prompt=$2
+
+  echo -e "\e[39m$__prompt\e[0m"
+  echo "Y/n: "
+
+  if [[ $AUTO_YES == 1 ]];
+  then
+    echo "Automatically answering Yes"
+    eval $__resultvar="y"
+  else
+    read answer
+    if [[ $answer =~ ^[n,N].* ]];
+    then
+      eval $__resultvar="n"
+    else
+      eval $__resultvar="y"
+    fi
+  fi
+}
+
+prompt_yesNO() {
+  # as the user a y/N question
+  # $1 is the variable into which the answer is saved as either "n" or "y"
+  # $2 is the question to ask
+
+  local __resultvar=$1
+  local __prompt=$2
+
+  echo -e "\e[39m$__prompt\e[0m"
+  echo "y/N: "
+
+  if [[ $AUTO_YES == 1 ]];
+  then
+    echo "Automatically answering No"
+    eval $__resultvar="n"
+  else
+    read answer
+    if [[ $answer =~ ^[y,Y].* ]];
+    then
+      eval $__resultvar="y"
+    else
+      eval $__resultvar="n"
+    fi
+  fi
+}
+
+# available robots; pre-load the user-choice with -1 to indicate undefined
+ROBOT_HUSKY_A200=1
+ROBOT_JACKAL_J100=2
+ROBOT_CHOICE=-1
+
 # Set front end to non-interactive to avoid prompts while installing packages
 export DEBIAN_FRONTEND=noninteractive
 
@@ -32,12 +113,9 @@ echo ""
 
 # Check if the script is run as root
 if [ "$EUID" -eq 0 ]; then
-    echo "You are the root user, setting user to administrator which is default on all Clearpath Platforms."
-    installer_user="administrator"
-else
-    installer_user="$(whoami)"
-    echo "Running as user: ${installer_user}"
+    echo "You are the root user, this needs to be ran as a user to be completed."
 fi
+
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
 if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
@@ -82,16 +160,10 @@ fi
 echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
 echo ""
 
-
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
 sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
-echo ""
-
-echo -e "\e[94mSetting up enviroment\e[0m"
-sudo su - $installer_user bash -c 'grep -qxF "source /opt/ros/humble/setup.bash" ~/.bashrc || echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc'
-echo -e "\e[32mDone: Setting up enviroment\e[0m"
 echo ""
 
 echo -e "\e[94mConfiguring rosdep\e[0m"
@@ -121,107 +193,146 @@ else
   fi
 fi
 
-sudo su - $installer_user bash -c 'rosdep -q update'
-
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
 
-echo -e "\e[94mConfiguring Clearpath Setup\e[0m"
-# Check if Clearpath folder exists
-if [ -d /etc/clearpath/ ]; then
-  echo -e "\e[33mWarn: Clearpath folder exist, skipping\e[0m"
-else
-  echo -e "\e[94mCreating setup folder\e[0m"
-  sudo mkdir -p -m 777 /etc/clearpath/
-  # Check if directory was created
-  if [ !  -d /etc/clearpath/ ]; then
-    echo -e "\e[31mError: Clearpath folder setup, exiting\e[0m"
-    exit 0
-  fi
-fi
+### USER SECTION
+if [ ! "$EUID" -eq 0 ]; then
 
-# Check if Clearpath Config YAML exists
-if [ -e /etc/clearpath/robot.yaml ]; then
-  echo -e "\e[33mWarn: Cleaprath Robot YAML exists, skipping\e[0m"
-else
-  echo -e "\e[94mCreating default robot YAML \e[0m"
-  sudo cp /opt/ros/humble/share/clearpath_config/sample/a200_default.yaml /etc/clearpath/robot.yaml
-  # Check if sources were added
-  if [ ! -e /etc/clearpath/robot.yaml ]; then
-    echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
-    exit 0
-  fi
-fi
-
-echo -e "\e[32mDone: Configuring Clearpath Setup\e[0m"
-echo ""
-
-echo -e "\e[94mSetting up groups\e[0m"
-
-if [ $(getent group flirimaging) ];
-then
-  echo "flirimaging group already exists";
-else
-  echo "Adding flirimaging group";
-  sudo addgroup flirimaging;
-fi
-if id -nGz "$installer_user" | grep -qzxF "flirimaging";
-then
-  echo "User:${installer_user} is already in flirimaging group";
-else
-  echo "Adding user:${installer_user} to flirimaging group";
-  sudo usermod -a -G flirimaging ${installer_user};
-fi
-
-
-val=$(< /sys/module/usbcore/parameters/usbfs_memory_mb)
-if [ "$val" -lt "1000" ]; then
-  if [ -e /etc/default/grub ]; then
-    if [ $(grep -c "usbcore.usbfs_memory_mb=" /etc/default/grub) -eq 0 ]; then # Memory Limit has not already been set
-      sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& usbcore.usbfs_memory_mb=1000/' /etc/default/grub
-      echo "Increased the usbfs memory limits in the default grub configuration. Updating grub"
-      sudo update-grub
-    else
-      echo -e "\e[33mWarn: usbfs memory limit is already set in /etc/default/grub in the following line:\e[0m"
-      echo "$(grep "usbcore.usbfs_memory_mb" /etc/default/grub)"
-      echo -e "\e[33mNo changes made, verify that usbfs_memory_mb is set to a minimum of 1000 and then try rebooting the computer\e[0m"
-    fi
-
-  else
-    echo -e "\e[33mWarn: /etc/default/grub configuration file not found, no changes made. usbfs_memory_mb must be set manually.\e[0m"
-    echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/blob/humble-devel/spinnaker_camera_driver/docs/linux_setup_flir.md for instructions\e[0m"
-    exit 0
-  fi
-else
-  echo "usbfs_memory_mb is already set to $val, no changes necessary."
-fi
-
-echo -e "\e[32mDone: Setting up groups\e[0m"
-echo ""
-
-echo -e "\e[94mInstalling clearpath robot service\e[0m"
-sudo su - $installer_user bash -c 'source /opt/ros/humble/setup.bash; ros2 run clearpath_robot install'
-
-if [ $? -eq 0 ]; then
-  echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+  echo -e "\e[94mUpdating rodep\e[0m"
+  rosdep -q update
+  echo -e "\e[32mDone: Updating rodep\e[0m"
   echo ""
-else
-    echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
-    exit 0
-fi
-sudo systemctl enable clearpath-robot
 
-echo -e "\e[94mSetting up clearpath enviroment\e[0m"
-sudo su - $installer_user bash -c 'grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc'
-echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
-echo ""
+  echo -e "\e[94mConfiguring Clearpath Setup\e[0m"
+  # Check if Clearpath folder exists
+  if [ -d /etc/clearpath/ ]; then
+    echo -e "\e[33mWarn: Clearpath folder exist, skipping\e[0m"
+  else
+    echo -e "\e[94mCreating setup folder\e[0m"
+    sudo mkdir -p -m 777 /etc/clearpath/
+    # Check if directory was created
+    if [ !  -d /etc/clearpath/ ]; then
+      echo -e "\e[31mError: Clearpath folder setup, exiting\e[0m"
+      exit 0
+    fi
+  fi
+
+  if [[ $ROBOT_CHOICE -eq -1 ]];
+  then
+    echo ""
+    prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100"
+  fi
+  case "$ROBOT_CHOICE" in
+    1)
+      platform="a200"
+      ;;
+    2)
+      platform="j100"
+      ;;
+    * )
+      echo -e "\e[31mERROR: Invalid selection"
+      exit 1
+      ;;
+  esac
+  echo "Selected ${platform}."
+  echo ""
+
+  # Check if Clearpath Config YAML exists
+  if [ -e /etc/clearpath/robot.yaml ]; then
+    echo -e "\e[33mWarn: Cleaprath Robot YAML exists\e[0m"
+    prompt_YESno update_config "\eWould you like to change Cleaprath Robot YAML?\e[0m"
+    if [[ $update_config == "y" ]]; then
+      sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.bkup.$(date +"%Y%m%d%H%M%S")
+      echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
+      sudo cp /opt/ros/humble/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      # Check if sources were added
+      if [ ! -e /etc/clearpath/robot.yaml ]; then
+        echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
+        exit 0
+      fi
+    else
+      echo "No change to Cleaprath Robot YAML"
+    fi
+  else
+    echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
+    sudo cp /opt/ros/humble/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    # Check if sources were added
+    if [ ! -e /etc/clearpath/robot.yaml ]; then
+      echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
+      exit 0
+    fi
+  fi
+
+  echo -e "\e[32mDone: Configuring Clearpath Setup\e[0m"
+  echo ""
+
+  echo -e "\e[94mInstalling clearpath robot service\e[0m"
+  source /opt/ros/humble/setup.bash; ros2 run clearpath_robot install
+
+  if [ $? -eq 0 ]; then
+    echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+    echo ""
+  else
+      echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
+      exit 0
+  fi
+  sudo systemctl enable clearpath-robot
+
+  echo -e "\e[94mSetting up clearpath enviroment\e[0m"
+  grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc
+  echo -e "\e[32mDone: Setting up clearpath enviroment\e[0m"
+  echo ""
+
+  echo -e "\e[94mSetting up groups\e[0m"
+
+  if [ $(getent group flirimaging) ];
+  then
+    echo "flirimaging group already exists";
+  else
+    echo "Adding flirimaging group";
+    sudo addgroup flirimaging;
+  fi
+  if id -nGz "$(whoami)" | grep -qzxF "flirimaging";
+  then
+    echo "User:$(whoami) is already in flirimaging group";
+  else
+    echo "Adding user:$(whoami) to flirimaging group";
+    sudo usermod -a -G flirimaging $(whoami);
+  fi
+
+  val=$(< /sys/module/usbcore/parameters/usbfs_memory_mb)
+  if [ "$val" -lt "1000" ]; then
+    if [ -e /etc/default/grub ]; then
+      if [ $(grep -c "usbcore.usbfs_memory_mb=" /etc/default/grub) -eq 0 ]; then # Memory Limit has not already been set
+        sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& usbcore.usbfs_memory_mb=1000/' /etc/default/grub
+        echo "Increased the usbfs memory limits in the default grub configuration. Updating grub"
+        sudo update-grub
+      else
+        echo -e "\e[33mWarn: usbfs memory limit is already set in /etc/default/grub in the following line:\e[0m"
+        echo "$(grep "usbcore.usbfs_memory_mb" /etc/default/grub)"
+        echo -e "\e[33mNo changes made, verify that usbfs_memory_mb is set to a minimum of 1000 and then try rebooting the computer\e[0m"
+      fi
+
+    else
+      echo -e "\e[33mWarn: /etc/default/grub configuration file not found, no changes made. usbfs_memory_mb must be set manually.\e[0m"
+      echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/blob/humble-devel/spinnaker_camera_driver/docs/linux_setup_flir.md for instructions\e[0m"
+      exit 0
+    fi
+  else
+    echo "usbfs_memory_mb is already set to $val, no changes necessary."
+  fi
+
+  echo -e "\e[32mDone: Setting up groups\e[0m"
+  echo ""
+  echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
+  echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
+else
+  echo -e "\e[32mClearpath Computer Installer Needs to be ran as a user, please re-run.\e[0m"
+fi
 
 # Reenable messages about restarting services in systems with needrestart installed
 if [ -d /etc/needrestart/conf.d ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
 fi
-
-echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
-echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
-echo -e "\e[94mTo start the robot service run:\e[0m sudo systemctl daemon-reload && sudo systemctl start clearpath-robot.service"
