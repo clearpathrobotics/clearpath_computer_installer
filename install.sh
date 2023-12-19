@@ -197,6 +197,24 @@ echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
 
 
+echo -e "\e[94mConfiguring network service, if needed\e[0m"
+# Check if the service file exists
+if [ -e "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service" ]; then
+    # Check if TimeoutStartSec is present in the service file
+    if grep -q "$TIMEOUT_LINE" "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"; then
+        echo "TimeoutStartSec is already present in /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+    else
+        # Add TimeoutStartSec after RemainAfterExit=yes
+        sed -i '/RemainAfterExit=yes/a \'"$TIMEOUT_LINE"'' "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+        echo "TimeoutStartSec added to /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+    fi
+else
+    echo "Service file /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service not found."
+fi
+
+echo -e "\e[32mDone: Configuring network service\e[0m"
+echo ""
+
 ### USER SECTION
 if [ ! "$EUID" -eq 0 ]; then
 
