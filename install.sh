@@ -352,6 +352,6 @@ fi
 
 
 # Reenable messages about restarting services in systems with needrestart installed
-if [ -d /etc/needrestart/conf.d ]; then
+if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
 fi
