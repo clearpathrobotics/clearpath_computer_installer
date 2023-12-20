@@ -217,9 +217,9 @@ echo ""
 ### USER ONLY SECTION
 if [ ! "$EUID" -eq 0 ]; then
 
-  echo -e "\e[94mUpdating rodep\e[0m"
+  echo -e "\e[94mUpdating rosdep\e[0m"
   rosdep -q update
-  echo -e "\e[32mDone: Updating rodep\e[0m"
+  echo -e "\e[32mDone: Updating rosdep\e[0m"
   echo ""
 
   if [[ $ROBOT_CHOICE -eq -1 ]];
