@@ -242,6 +242,19 @@ if [ ! "$EUID" -eq 0 ]; then
   echo "Selected ${platform}."
   echo ""
 
+  # Check if Clearpath folder exists
+  if [ -d /etc/clearpath/ ]; then
+    echo -e "\e[33mWarn: Clearpath folder exist, skipping\e[0m"
+  else
+    echo -e "\e[94mCreating setup folder\e[0m"
+    sudo mkdir -p -m 777 /etc/clearpath/
+    # Check if directory was created
+    if [ !  -d /etc/clearpath/ ]; then
+      echo -e "\e[31mError: Clearpath folder setup, exiting\e[0m"
+      exit 0
+    fi
+  fi
+
   # Check if Clearpath Config YAML exists
   if [ -e /etc/clearpath/robot.yaml ]; then
     echo -e "\e[33mWarn: Cleaprath Robot YAML exists\e[0m"
