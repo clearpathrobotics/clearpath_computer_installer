@@ -364,8 +364,8 @@ fi
 
 # Check if the hostname is cpr-unassigned
 echo -e "\e[94mChecking hostname\e[0m"
-if [ "$(hostname)" = "cpr-unassigned" ]; then
-  echo "Hostname is currently set to 'cpr-unassigned'."
+if [ "$(hostname)" = "clearpath-unassigned" ]; then
+  echo "Hostname is currently set to 'clearpath-unassigned'."
   prompt_YESno change_hostname "\eWould you like to change hostname?\e[0m"
   if [[ $change_hostname == "y" ]]; then
     # Prompt the user for a new hostname
