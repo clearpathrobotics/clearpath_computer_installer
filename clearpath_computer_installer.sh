@@ -288,16 +288,22 @@ if [ ! "$EUID" -eq 0 ]; then
   echo -e "\e[32mDone: Configuring Clearpath Setup\e[0m"
   echo ""
 
-  echo -e "\e[94mInstalling clearpath robot service\e[0m"
   source /opt/ros/humble/setup.bash
-  ros2 run clearpath_robot install
 
-  if [ $? -eq 0 ]; then
-    echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
-    echo ""
+  prompt_YESno install_service "\e Would you like to install Cleaprath services?\e[0m"
+  if [[ $install_service == "y" ]]; then
+    echo -e "\e[94mInstalling clearpath robot service\e[0m"
+    ros2 run clearpath_robot install
+
+    if [ $? -eq 0 ]; then
+      echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+      echo ""
+    else
+      echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
+      exit 0
+    fi
   else
-    echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
-    exit 0
+    echo "Skipping installing Clearpath services"
   fi
 
   sudo systemctl enable clearpath-robot
@@ -350,8 +356,10 @@ if [ ! "$EUID" -eq 0 ]; then
   echo ""
   echo -e "\e[32mClearpath Computer Installer Complete\e[0m"
   echo -e "\e[94mTo continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup \e[0m"
+  echo ""
 else
   echo -e "\e[32mClearpath Computer Installer needs to be ran as a user, please re-run.\e[0m"
+  echo ""
 fi
 
 # Check if the hostname is cpr-unassigned
