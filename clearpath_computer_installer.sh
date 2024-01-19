@@ -354,6 +354,28 @@ else
   echo -e "\e[32mClearpath Computer Installer needs to be ran as a user, please re-run.\e[0m"
 fi
 
+# Check if the hostname is cpr-unassigned
+echo -e "\e[94mChecking hostname\e[0m"
+if [ "$(hostname)" = "cpr-unassigned" ]; then
+  echo "Hostname is currently set to 'cpr-unassigned'."
+  prompt_YESno change_hostname "\eWould you like to change hostname?\e[0m"
+  if [[ $change_hostname == "y" ]]; then
+    # Prompt the user for a new hostname
+    read -p "Enter a new hostname (Format is cpr-ROBOT_MODEL-SERIAL_NO, ie cpr-a200-1234): " new_hostname
+    # Change the hostname
+    sudo hostnamectl set-hostname "$new_hostname"
+    # Display the new hostname
+    echo "Hostname changed to '$new_hostname'."
+    # Notify the user to restart for changes to take effect
+    echo "Please restart your system for the changes to take effect."
+  else
+    echo "No change to hostname"
+  fi
+else
+    echo "Hostname is already set to '$(hostname)'. No changes needed."
+fi
+echo -e "\e[32mDone: Checking hostname\e[0m"
+echo ""
 
 # Reenable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
