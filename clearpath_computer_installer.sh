@@ -278,6 +278,7 @@ if [ ! "$EUID" -eq 0 ]; then
   else
     echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
     sudo cp /opt/ros/humble/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
       echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
