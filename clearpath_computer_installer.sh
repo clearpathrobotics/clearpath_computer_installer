@@ -289,6 +289,61 @@ if [ ! "$EUID" -eq 0 ]; then
   echo -e "\e[32mDone: Configuring Clearpath Setup\e[0m"
   echo ""
 
+  while true; do
+    echo "Please enter the serial number of the robot (Only 4 digits, the platform model will be automatically added):"
+    read serial_number
+    # Regular expression to match 4 numbers
+    pattern='^[0-9]{4}$'
+
+    if [[ $serial_number =~ $pattern ]]; then
+        echo "Serial number is in the correct format."
+        break
+    else
+        echo -e "\e[31mError: Serial number is not in the correct format. It should consist of exactly 4 numbers.\e[0m"
+    fi
+  done
+
+  platform_serial_number="$platform-$serial_number"
+  hostname_string="cpr-$platform-$serial_number"
+  platform_namespace="$platform"_"$serial_number"
+
+  # Original file name
+  file_name="/etc/clearpath/robot.yaml"
+
+  # Check if the file exists
+  if [ -f "$file_name" ]; then
+      # Read the content of the file
+      original_content=$(<"$file_name")
+
+      # Replace everything after the colon with the new serial number
+      updated_content=$(echo "$original_content" | sed "s/serial_number: .*/serial_number: $platform_serial_number/")
+      updated_content=$(echo "$updated_content" | sed "s/namespace: .*/namespace: $platform_namespace/")
+      updated_content=$(echo "$updated_content" | sed "s/hostname: .*/hostname: $hostname_string/")
+
+      # Write the updated content back to the file
+      sudo echo "$updated_content" > "$file_name"
+
+      echo "Serial number updated in $file_name."
+  else
+        echo -e "\e[31mError: File $file_name does not exist.\e[0m"
+  fi
+
+
+  # Check if the hostname is cpr-unassigned
+  echo -e "\e[94mChecking hostname\e[0m"
+  if [ "$(hostname)" = "clearpath-unassigned" ]; then
+    echo "Hostname is currently set to 'clearpath-unassigned'."
+    sudo hostnamectl set-hostname "$hostname_string"
+    # Display the new hostname
+    echo "Hostname changed to '$hostname_string'."
+    # Notify the user to restart for changes to take effect
+    echo "Please restart your system for the changes to take effect."
+  else
+      echo "Hostname is already set to '$(hostname)'. No changes needed."
+  fi
+  echo -e "\e[32mDone: Checking hostname\e[0m"
+  echo ""
+
   source /opt/ros/humble/setup.bash
 
   prompt_YESno install_service "\e Would you like to install Cleaprath services?\e[0m"
@@ -363,28 +418,7 @@ else
   echo ""
 fi
 
-# Check if the hostname is cpr-unassigned
-echo -e "\e[94mChecking hostname\e[0m"
-if [ "$(hostname)" = "clearpath-unassigned" ]; then
-  echo "Hostname is currently set to 'clearpath-unassigned'."
-  prompt_YESno change_hostname "\eWould you like to change hostname?\e[0m"
-  if [[ $change_hostname == "y" ]]; then
-    # Prompt the user for a new hostname
-    read -p "Enter a new hostname (Format is cpr-ROBOT_MODEL-SERIAL_NO, ie cpr-a200-1234): " new_hostname
-    # Change the hostname
-    sudo hostnamectl set-hostname "$new_hostname"
-    # Display the new hostname
-    echo "Hostname changed to '$new_hostname'."
-    # Notify the user to restart for changes to take effect
-    echo "Please restart your system for the changes to take effect."
-  else
-    echo "No change to hostname"
-  fi
-else
-    echo "Hostname is already set to '$(hostname)'. No changes needed."
-fi
-echo -e "\e[32mDone: Checking hostname\e[0m"
-echo ""
+
 
 # Reenable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
