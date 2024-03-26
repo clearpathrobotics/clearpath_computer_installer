@@ -424,3 +424,11 @@ fi
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
 fi
+
+
+if ping -c1 gitlab.clearpathrobotics.com;
+then
+  echo -e "\e[94mDownloading wireless configuration script for use later\e[0m"
+  wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
+  chmod +x /home/$USER/setup-lv426.sh
+fi
