@@ -163,7 +163,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
+sudo apt install iw ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
