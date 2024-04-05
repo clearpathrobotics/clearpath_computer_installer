@@ -163,7 +163,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
+sudo apt install iw ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
@@ -423,4 +423,12 @@ fi
 # Reenable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
+fi
+
+
+if ping -c1 gitlab.clearpathrobotics.com;
+then
+  echo -e "\e[94mDownloading wireless configuration script for use later\e[0m"
+  wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
+  chmod +x /home/$USER/setup-lv426.sh
 fi
