@@ -261,8 +261,8 @@ if [ ! "$EUID" -eq 0 ]; then
 
   # Check if Clearpath Config YAML exists
   if [ -e /etc/clearpath/robot.yaml ]; then
-    echo -e "\e[33mWarn: Cleaprath Robot YAML exists\e[0m"
-    prompt_YESno update_config "\eWould you like to change Cleaprath Robot YAML?\e[0m"
+    echo -e "\e[33mWarn: Clearpath Robot YAML exists\e[0m"
+    prompt_YESno update_config "\eWould you like to change Clearpath Robot YAML?\e[0m"
     if [[ $update_config == "y" ]]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.bkup.$(date +"%Y%m%d%H%M%S")
       echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
@@ -273,7 +273,7 @@ if [ ! "$EUID" -eq 0 ]; then
         exit 0
       fi
     else
-      echo "No change to Cleaprath Robot YAML"
+      echo "No change to Clearpath Robot YAML"
     fi
   else
     echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
@@ -346,7 +346,7 @@ if [ ! "$EUID" -eq 0 ]; then
 
   source /opt/ros/humble/setup.bash
 
-  prompt_YESno install_service "\e Would you like to install Cleaprath services?\e[0m"
+  prompt_YESno install_service "\e Would you like to install Clearpath services?\e[0m"
   if [[ $install_service == "y" ]]; then
     echo -e "\e[94mInstalling clearpath robot service\e[0m"
     ros2 run clearpath_robot install
