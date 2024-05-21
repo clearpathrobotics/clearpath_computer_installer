@@ -199,18 +199,21 @@ echo ""
 
 echo -e "\e[94mConfiguring network service, if needed\e[0m"
 # Check if the service file exists
-if [ -e "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service" ]; then
-    # Check if TimeoutStartSec is present in the service file
-    if grep -q "TimeoutStartSec=2sec" "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"; then
-        echo "TimeoutStartSec is already present in /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+if [ -e "/lib/systemd/system/systemd-networkd-wait-online.service" ]; then
+    # Check if timeout is present in the service file
+    if grep -q "timeout=30" "/lib/systemd/system/systemd-networkd-wait-online.service"; then
+        echo "Timeout is already present in /lib/systemd/system/systemd-networkd-wait-online.service"
     else
-        # Add TimeoutStartSec after RemainAfterExit=yes
-        sudo sed -i '/RemainAfterExit=yes/a \'"TimeoutStartSec=2sec"'' "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
-        echo "TimeoutStartSec added to /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+        # Add --timeout=30 after ExecStart=/lib/systemd/systemd-networkd-wait-online
+        sudo sed -i '/^ExecStart/ s/$/ --timeout=30/' "/lib/systemd/system/systemd-networkd-wait-online.service"
+        echo "Timeout added to /lib/systemd/system/systemd-networkd-wait-online.service"
     fi
 else
-    echo "Service file /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service not found."
+    echo "Service file /lib/systemd/system/systemd-networkd-wait-online.service not found."
 fi
+# Ensure the service is enabled
+sudo systemctl enable systemd-networkd-wait-online
+
 echo -e "\e[32mDone: Configuring network service, if needed\e[0m"
 echo ""
 
