@@ -199,18 +199,21 @@ echo ""
 
 echo -e "\e[94mConfiguring network service, if needed\e[0m"
 # Check if the service file exists
-if [ -e "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service" ]; then
-    # Check if TimeoutStartSec is present in the service file
-    if grep -q "TimeoutStartSec=2sec" "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"; then
-        echo "TimeoutStartSec is already present in /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+if [ -e "/lib/systemd/system/systemd-networkd-wait-online.service" ]; then
+    # Check if timeout is present in the service file
+    if grep -q "timeout=30" "/lib/systemd/system/systemd-networkd-wait-online.service"; then
+        echo "Timeout is already present in /lib/systemd/system/systemd-networkd-wait-online.service"
     else
-        # Add TimeoutStartSec after RemainAfterExit=yes
-        sudo sed -i '/RemainAfterExit=yes/a \'"TimeoutStartSec=2sec"'' "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
-        echo "TimeoutStartSec added to /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+        # Add --timeout=30 after ExecStart=/lib/systemd/systemd-networkd-wait-online
+        sudo sed -i '/^ExecStart/ s/$/ --timeout=30/' "/lib/systemd/system/systemd-networkd-wait-online.service"
+        echo "Timeout added to /lib/systemd/system/systemd-networkd-wait-online.service"
     fi
 else
-    echo "Service file /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service not found."
+    echo "Service file /lib/systemd/system/systemd-networkd-wait-online.service not found."
 fi
+# Ensure the service is enabled
+sudo systemctl enable systemd-networkd-wait-online
+
 echo -e "\e[32mDone: Configuring network service, if needed\e[0m"
 echo ""
 
@@ -387,21 +390,21 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
 
   val=$(< /sys/module/usbcore/parameters/usbfs_memory_mb)
-  if [ "$val" -lt "1000" ]; then
+  if [ "$val" -lt "2048" ]; then
     if [ -e /etc/default/grub ]; then
       if [ $(grep -c "usbcore.usbfs_memory_mb=" /etc/default/grub) -eq 0 ]; then # Memory Limit has not already been set
-        sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& usbcore.usbfs_memory_mb=1000/' /etc/default/grub
+        sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& usbcore.usbfs_memory_mb=2048/' /etc/default/grub
         echo "Increased the usbfs memory limits in the default grub configuration. Updating grub"
         sudo update-grub
       else
         echo -e "\e[33mWarn: usbfs memory limit is already set in /etc/default/grub in the following line:\e[0m"
         echo "$(grep "usbcore.usbfs_memory_mb" /etc/default/grub)"
-        echo -e "\e[33mNo changes made, verify that usbfs_memory_mb is set to a minimum of 1000 and then try rebooting the computer\e[0m"
+        echo -e "\e[33mNo changes made, verify that usbfs_memory_mb is set to a minimum of 2048 and then try rebooting the computer\e[0m"
       fi
 
     else
       echo -e "\e[33mWarn: /etc/default/grub configuration file not found, no changes made. usbfs_memory_mb must be set manually.\e[0m"
-      echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/blob/humble-devel/spinnaker_camera_driver/docs/linux_setup_flir.md for instructions\e[0m"
+      echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/tree/humble-release/spinnaker_camera_driver#setting-up-linux-without-spinnaker-sdk for instructions\e[0m"
       exit 0
     fi
   else
