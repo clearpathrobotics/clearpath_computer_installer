@@ -374,6 +374,21 @@ if [ ! "$EUID" -eq 0 ]; then
 
   echo -e "\e[94mSetting up groups\e[0m"
 
+  if [ $(getent group video) ];
+  then
+    echo "video group already exists";
+  else
+    echo "Adding video group";
+    sudo addgroup video;
+  fi
+  if id -nGz "$(whoami)" | grep -qzxF "video";
+  then
+    echo "User:$(whoami) is already in video group";
+  else
+    echo "Adding user:$(whoami) to video group";
+    sudo usermod -a -G video $(whoami);
+  fi
+
   if [ $(getent group flirimaging) ];
   then
     echo "flirimaging group already exists";
