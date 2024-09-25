@@ -229,7 +229,7 @@ if [ ! "$EUID" -eq 0 ]; then
   if [[ $ROBOT_CHOICE -eq -1 ]];
   then
     echo ""
-    prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100" "Clearpath Warthog W200"
+    prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100" "Clearpath Warthog W200" "Clearpath Ridgeback R100" "Clearpath Dingo-D DD100" "Clearpath Dingo-D DD150"
   fi
   case "$ROBOT_CHOICE" in
     1)
@@ -241,6 +241,21 @@ if [ ! "$EUID" -eq 0 ]; then
     3)
       platform="w200"
       ;;
+    5)
+      platform="r100"
+      ;;
+    6)
+      platform="dd100"
+      ;;
+    5)
+      platform="dd150"
+      ;;
+    # 6)
+    #   platform="do100"
+    #   ;;
+    # 7)
+    #   platform="do150"
+    #   ;;
     * )
       echo -e "\e[31mERROR: Invalid selection"
       exit 1
