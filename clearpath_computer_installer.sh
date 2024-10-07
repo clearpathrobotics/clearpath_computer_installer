@@ -241,13 +241,13 @@ if [ ! "$EUID" -eq 0 ]; then
     3)
       platform="w200"
       ;;
-    5)
+    4)
       platform="r100"
       ;;
-    6)
+    5)
       platform="dd100"
       ;;
-    5)
+    6)
       platform="dd150"
       ;;
     # 6)
