@@ -122,7 +122,7 @@ if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
 fi
 
-echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Humble\e[0m"
+echo -e "\e[94mSetup Open Robotics package server to install ROS 2 Jazzy\e[0m"
 
 # Check if ROS 2 sources are already installed
 if [ -e /etc/apt/sources.list.d/ros2.list ]; then
@@ -163,7 +163,7 @@ echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install iw ros-humble-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-humble-clearpath-robot python3-clearpath-computer-setup -y
+sudo apt install iw ros-jazzy-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-jazzy-clearpath-robot python3-clearpath-computer-setup -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
@@ -284,7 +284,7 @@ if [ ! "$EUID" -eq 0 ]; then
     if [[ $update_config == "y" ]]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.bkup.$(date +"%Y%m%d%H%M%S")
       echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-      sudo cp /opt/ros/humble/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo cp /opt/ros/jazzy/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
@@ -295,7 +295,7 @@ if [ ! "$EUID" -eq 0 ]; then
     fi
   else
     echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-    sudo cp /opt/ros/humble/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo cp /opt/ros/jazzy/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
     sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
@@ -362,7 +362,7 @@ if [ ! "$EUID" -eq 0 ]; then
   echo -e "\e[32mDone: Checking hostname\e[0m"
   echo ""
 
-  source /opt/ros/humble/setup.bash
+  source /opt/ros/jazzy/setup.bash
 
   prompt_YESno install_service "\e[39mWould you like to install Clearpath services?\e[0m"
   if [[ $install_service == "y" ]]; then
@@ -434,7 +434,7 @@ if [ ! "$EUID" -eq 0 ]; then
 
     else
       echo -e "\e[33mWarn: /etc/default/grub configuration file not found, no changes made. usbfs_memory_mb must be set manually.\e[0m"
-      echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/tree/humble-release/spinnaker_camera_driver#setting-up-linux-without-spinnaker-sdk for instructions\e[0m"
+      echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/tree/rolling-release/spinnaker_camera_driver#setting-up-linux-without-spinnaker-sdk for instructions\e[0m"
       exit 0
     fi
   else
