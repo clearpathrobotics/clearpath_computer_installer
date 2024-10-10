@@ -286,14 +286,15 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
 
   # Check if Clearpath Config YAML exists
-  wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/refs/heads/${CONFIG_BRANCH}/clearpath_config/sample/${platform}/${platform}_default.yaml
+  wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/refs/heads/${CONFIG_BRANCH}/clearpath_config/sample/${platform}/${platform}_default.yaml -O /home/$USER/robot.yaml
   if [ -e /etc/clearpath/robot.yaml ]; then
     echo -e "\e[33mWarn: Clearpath Robot YAML exists\e[0m"
     prompt_YESno update_config "\e[39mWould you like to change Clearpath Robot YAML?\e[0m"
     if [[ $update_config == "y" ]]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.bkup.$(date +"%Y%m%d%H%M%S")
       echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-      sudo mv /home/administrator/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo cp /home/${USER}/robot.yaml /etc/clearpath/robot.yaml
+      rm /home/${USER}/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
@@ -304,7 +305,8 @@ if [ ! "$EUID" -eq 0 ]; then
     fi
   else
     echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-    sudo mv /home/administrator/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo cp /home/${USER}/robot.yaml /etc/clearpath/robot.yaml
+    rm /home/${USER}/robot.yaml
     sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
@@ -348,6 +350,7 @@ if [ ! "$EUID" -eq 0 ]; then
       updated_content=$(echo "$updated_content" | sed "s/hostname: .*/hostname: $hostname_string/")
 
       # Write the updated content back to the file
+      sudo rm "$file_name"
       sudo echo "$updated_content" > "$file_name"
 
       echo "Serial number updated in $file_name."
@@ -381,12 +384,14 @@ if [ ! "$EUID" -eq 0 ]; then
     echo -e "\e[94mCloning common repositories\e[0m"
     wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
     vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+    rm /home/$USER/${repos}.repos
 
     if [[ $platform != "a200" ]]; then
       repos=micro_ros
       echo -e "\e[94mCloning micro-ros repositories\e[0m"
       wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
       vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+      rm /home/$USER/${repos}.repos
     fi
 
     if [[ $platform == "r100" ||
@@ -398,6 +403,7 @@ if [ ! "$EUID" -eq 0 ]; then
       echo -e "\e[94mCloning motor repositories\e[0m"
       wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
       vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+      rm /home/$USER/${repos}.repos
     fi
 
     if [[ $platform == "r100" ||
@@ -407,6 +413,7 @@ if [ ! "$EUID" -eq 0 ]; then
       echo -e "\e[94mCloning mecanum repositories\e[0m"
       wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
       vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+      rm /home/$USER/${repos}.repos
     fi
 
     echo -e "\e[94mInstalling dependencies\e[0m"
