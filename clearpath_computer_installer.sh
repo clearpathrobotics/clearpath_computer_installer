@@ -103,7 +103,18 @@ prompt_yesNO() {
 ROBOT_HUSKY_A200=1
 ROBOT_JACKAL_J100=2
 ROBOT_WARTHOG_W200=3
+ROBOT_RIDGEBACK_R100=4
+ROBOT_DINGO_DD100=5
+ROBOT_DINGO_DD150=6
+ROBOT_DINGO_DO100=7
+ROBOT_DINGO_DO150=8
 ROBOT_CHOICE=-1
+
+# samples branch
+CONFIG_BRANCH=jazzy-2.0RC
+
+# installer branch
+INSTALLER_BRANCH=jazzy-2.0RC
 
 # Set front end to non-interactive to avoid prompts while installing packages
 export DEBIAN_FRONTEND=noninteractive
@@ -143,27 +154,25 @@ fi
 echo -e "\e[32mDone: Setup ROS 2 package server\e[0m"
 echo ""
 
-echo -e "\e[94mSetup Clearpath Robotics package server\e[0m"
-
-# Check if Clearpath sources are already installed
-if [ -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
-  echo -e "\e[33mWarn: Clearpath Robotics sources exist, skipping\e[0m"
-else
-  wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
-  sudo bash -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
-  # Check if sources were added
-  if [ ! -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
-    echo -e "\e[31mError: Unable to add Clearpath Robotics package server, exiting\e[0m"
-    exit 0
-  fi
-fi
-
-echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
-echo ""
+# echo -e "\e[94mSetup Clearpath Robotics package server\e[0m"
+# # Check if Clearpath sources are already installed
+# if [ -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
+#   echo -e "\e[33mWarn: Clearpath Robotics sources exist, skipping\e[0m"
+# else
+#   wget https://packages.clearpathrobotics.com/public.key -O - | sudo apt-key add -
+#   sudo bash -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/clearpath-latest.list'
+#   # Check if sources were added
+#   if [ ! -e /etc/apt/sources.list.d/clearpath-latest.list ]; then
+#     echo -e "\e[31mError: Unable to add Clearpath Robotics package server, exiting\e[0m"
+#     exit 0
+#   fi
+# fi
+# echo -e "\e[32mDone: Setup Clearpath Robotics package server\e[0m"
+# echo ""
 
 echo -e "\e[94mUpdating packages and installing ROS 2\e[0m"
 sudo apt -y -qq update
-sudo apt install iw ros-jazzy-ros-base python3-argcomplete ros-dev-tools python3-vcstool ros-jazzy-clearpath-robot python3-clearpath-computer-setup -y
+sudo apt install iw ros-jazzy-ros-base python3-argcomplete ros-dev-tools python3-vcstool -y
 echo -e "\e[32mDone: Updating packages and installing ROS 2\e[0m"
 echo ""
 
@@ -181,18 +190,18 @@ else
   fi
 fi
 
-# Check if Clearpath rosdep sources are already installed
-if [ -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
-  echo -e "\e[33mWarn: CPR rosdeps exist, skipping\e[0m"
-else
-  sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O \
-    /etc/ros/rosdep/sources.list.d/50-clearpath.list
-  # Check if sources were added
-  if [ ! -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
-    echo -e "\e[31mError: CPR rosdeps, exiting\e[0m"
-    exit 0
-  fi
-fi
+# # Check if Clearpath rosdep sources are already installed
+# if [ -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+#   echo -e "\e[33mWarn: CPR rosdeps exist, skipping\e[0m"
+# else
+#   sudo wget -q https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O \
+#     /etc/ros/rosdep/sources.list.d/50-clearpath.list
+#   # Check if sources were added
+#   if [ ! -e /etc/ros/rosdep/sources.list.d/50-clearpath.list ]; then
+#     echo -e "\e[31mError: CPR rosdeps, exiting\e[0m"
+#     exit 0
+#   fi
+# fi
 
 echo -e "\e[32mDone: Configuring rosdep\e[0m"
 echo ""
@@ -208,12 +217,11 @@ if [ -e "/lib/systemd/system/systemd-networkd-wait-online.service" ]; then
         sudo sed -i '/^ExecStart/ s/$/ --timeout=30/' "/lib/systemd/system/systemd-networkd-wait-online.service"
         echo "Timeout added to /lib/systemd/system/systemd-networkd-wait-online.service"
     fi
+    # Ensure the service is enabled
+    sudo systemctl enable systemd-networkd-wait-online
 else
     echo "Service file /lib/systemd/system/systemd-networkd-wait-online.service not found."
 fi
-# Ensure the service is enabled
-sudo systemctl enable systemd-networkd-wait-online
-
 echo -e "\e[32mDone: Configuring network service, if needed\e[0m"
 echo ""
 
@@ -232,22 +240,22 @@ if [ ! "$EUID" -eq 0 ]; then
     prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100" "Clearpath Warthog W200" "Clearpath Ridgeback R100" "Clearpath Dingo-D DD100" "Clearpath Dingo-D DD150"
   fi
   case "$ROBOT_CHOICE" in
-    1)
+    $ROBOT_HUSKY_A200)
       platform="a200"
       ;;
-    2)
+    $ROBOT_JACKAL_J100)
       platform="j100"
       ;;
-    3)
+    $ROBOT_WARTHOG_W200)
       platform="w200"
       ;;
-    4)
+    $ROBOT_RIDGEBACK_R100)
       platform="r100"
       ;;
-    5)
+    $ROBOT_DINGO_DD100)
       platform="dd100"
       ;;
-    6)
+    $ROBOT_DINGO_DD150)
       platform="dd150"
       ;;
     # 6)
@@ -278,13 +286,14 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
 
   # Check if Clearpath Config YAML exists
+  wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_config/refs/heads/${CONFIG_BRANCH}/clearpath_config/sample/${platform}/${platform}_default.yaml
   if [ -e /etc/clearpath/robot.yaml ]; then
     echo -e "\e[33mWarn: Clearpath Robot YAML exists\e[0m"
     prompt_YESno update_config "\e[39mWould you like to change Clearpath Robot YAML?\e[0m"
     if [[ $update_config == "y" ]]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.bkup.$(date +"%Y%m%d%H%M%S")
       echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-      sudo cp /opt/ros/jazzy/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo mv /home/administrator/${platform}_default.yaml /etc/clearpath/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         echo -e "\e[31mError: Clearpath robot YAML, exiting\e[0m"
@@ -295,7 +304,7 @@ if [ ! "$EUID" -eq 0 ]; then
     fi
   else
     echo -e "\e[94mCreating default robot YAML for ${platform}\e[0m"
-    sudo cp /opt/ros/jazzy/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo mv /home/administrator/${platform}_default.yaml /etc/clearpath/robot.yaml
     sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
@@ -364,23 +373,71 @@ if [ ! "$EUID" -eq 0 ]; then
 
   source /opt/ros/jazzy/setup.bash
 
-  prompt_YESno install_service "\e[39mWould you like to install Clearpath services?\e[0m"
-  if [[ $install_service == "y" ]]; then
-    echo -e "\e[94mInstalling clearpath robot service\e[0m"
-    ros2 run clearpath_robot install
+  prompt_YESno setup_workspace "\e[39mWould you like to create workspace and clone Clearpath packages?\e[0m"
+  if [[ $setup_workspace == "y" ]]; then
+    mkdir /home/$USER/colcon_ws/src -p
 
-    if [ $? -eq 0 ]; then
-      echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
-      echo ""
-    else
-      echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
-      exit 0
+    repos=common
+    echo -e "\e[94mCloning common repositories\e[0m"
+    wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
+    vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+
+    if [[ $platform != "a200" ]]; then
+      repos=micro_ros
+      echo -e "\e[94mCloning micro-ros repositories\e[0m"
+      wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
+      vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
     fi
-  else
-    echo "Skipping installing Clearpath services"
-  fi
 
-  sudo systemctl enable clearpath-robot
+    if [[ $platform == "r100" ||
+            $platform == "dd100" ||
+            $platform == "dd150" ||
+            $platform == "do100" ||
+            $platform == "do150" ]]; then
+      repos=motor
+      echo -e "\e[94mCloning motor repositories\e[0m"
+      wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
+      vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+    fi
+
+    if [[ $platform == "r100" ||
+            $platform == "do100" ||
+            $platform == "do150" ]]; then
+      repos=mecanum
+      echo -e "\e[94mCloning mecanum repositories\e[0m"
+      wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jazzy-2.0RC/repos/${repos}.repos -O /home/$USER/${repos}.repos
+      vcs import --input /home/$USER/${repos}.repos /home/$USER/colcon_ws/src
+    fi
+
+    echo -e "\e[94mInstalling dependencies\e[0m"
+    cd /home/$USER/colcon_ws/
+    rosdep install --from-paths src --ignore-src -r -y --skip-keys "kortex_description kortex_driver"
+
+    echo -e "\e[94mBuilding workspace\e[0m"
+    cd /home/$USER/colcon_ws/
+    source /opt/ros/jazzy/setup.bash
+    colcon build --symlink-install
+
+    echo -e "\e[94mDone: Building workspace\e[0m"
+    source /home/$USER/colcon_ws/install/setup.bash
+
+    prompt_YESno install_service "\e[39mWould you like to install Clearpath services?\e[0m"
+    if [[ $install_service == "y" ]]; then
+      echo -e "\e[94mInstalling clearpath robot service\e[0m"
+      ros2 run clearpath_robot install
+
+      if [ $? -eq 0 ]; then
+        echo -e "\e[32mDone: Installing clearpath robot service\e[0m"
+        echo ""
+      else
+        echo -e "\e[31mError: Failed to install clearpath robot service\e[0m"
+        exit 0
+      fi
+      sudo systemctl enable clearpath-robot
+    else
+      echo "Skipping installing Clearpath services"
+    fi
+  fi
 
   echo -e "\e[94mSetting up clearpath enviroment\e[0m"
   grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc
@@ -435,7 +492,6 @@ if [ ! "$EUID" -eq 0 ]; then
     else
       echo -e "\e[33mWarn: /etc/default/grub configuration file not found, no changes made. usbfs_memory_mb must be set manually.\e[0m"
       echo -e "\e[33mSee https://github.com/ros-drivers/flir_camera_driver/tree/rolling-release/spinnaker_camera_driver#setting-up-linux-without-spinnaker-sdk for instructions\e[0m"
-      exit 0
     fi
   else
     echo "usbfs_memory_mb is already set to $val, no changes necessary."
@@ -451,13 +507,10 @@ else
   echo ""
 fi
 
-
-
 # Reenable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
 fi
-
 
 if ping -c1 gitlab.clearpathrobotics.com;
 then

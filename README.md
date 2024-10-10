@@ -6,5 +6,5 @@ This script includes setting of ROS 2 and Clearpath package servers, installing 
 
 ## Usage
 ```
-wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/clearpath_computer_installer.sh && bash -e clearpath_computer_installer.sh
+wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/lcamero/jazzy/clearpath_computer_installer.sh && bash -e clearpath_computer_installer.sh
 ```
