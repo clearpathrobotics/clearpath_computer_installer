@@ -1,0 +1,9 @@
+repositories:
+  clearpath_motor_drivers:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_motor_drivers.git
+    version: jazzy-2.0RC
+  clearpath_ros2_socketcan_interface:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_ros2_socketcan_interface.git
+    version: jazzy-2.0RC
