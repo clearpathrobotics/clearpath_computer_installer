@@ -126,9 +126,9 @@ fi
 UBUNTU_VERSION=$(. /etc/os-release && echo $UBUNTU_CODENAME)
 
 # Determine the ROS 2 version based on the OS
-if [[ "$UBUNTU_VERSION" == "22.04" ]]; then
+if [[ "$UBUNTU_VERSION" == "jammy" ]]; then
   ROS_VERSION="humble"
-elif [[ "$UBUNTU_VERSION" == "24.04" ]]; then
+elif [[ "$UBUNTU_VERSION" == "noble" ]]; then
   ROS_VERSION="jazzy"
 else
   ROS_VERSION="unsupported"
