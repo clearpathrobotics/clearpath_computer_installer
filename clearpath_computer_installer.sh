@@ -234,7 +234,7 @@ if [ ! "$EUID" -eq 0 ]; then
   if [[ $ROBOT_CHOICE -eq -1 ]];
   then
     echo ""
-    prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100" "Clearpath Warthog W200" "Clearpath Ridgeback R100" "Clearpath Dingo-D DD100" "Clearpath Dingo-D DD150" "Clearpath Dingo-P DO100" "Clearpath Dingo-O DO150"
+    prompt_option ROBOT_CHOICE "Which robot are you installing?" "Clearpath Husky A200" "Clearpath Jackal J100" "Clearpath Warthog W200" "Clearpath Ridgeback R100" "Clearpath Dingo-D DD100" "Clearpath Dingo-D DD150" "Clearpath Dingo-O DO100" "Clearpath Dingo-O DO150"
   fi
   case "$ROBOT_CHOICE" in
     $ROBOT_HUSKY_A200)
