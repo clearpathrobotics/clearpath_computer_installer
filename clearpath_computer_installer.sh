@@ -108,6 +108,7 @@ ROBOT_DINGO_DD100=5
 ROBOT_DINGO_DD150=6
 ROBOT_DINGO_DO100=7
 ROBOT_DINGO_DO150=8
+ROBOT_HUSKY_A300=9
 ROBOT_CHOICE=-1
 
 # Set front end to non-interactive to avoid prompts while installing packages
@@ -279,6 +280,9 @@ if [ ! "$EUID" -eq 0 ]; then
     $ROBOT_DINGO_DO150)
       platform="do150"
       ;;
+    $ROBOT_HUSKY_A300)
+      platform="a300"
+      ;;
     * )
       echo -e "\e[31mERROR: Invalid selection"
       exit 1
@@ -331,17 +335,33 @@ if [ ! "$EUID" -eq 0 ]; then
   echo ""
 
   while true; do
-    echo "Please enter the serial number of the robot (Only 4 digits, the platform model will be automatically added):"
-    read serial_number
-    # Regular expression to match 4 numbers
-    pattern='^[0-9]{4}$'
+    # A300 uses 5 digit serial numbers, others uses 4 digit serial numbers
+    if [[ $platform == "a300" ]]; then
+      echo "Please enter the serial number of the robot (Only 5 digits, the platform model will be automatically added):"
+      read serial_number
+      # Regular expression to match 5 numbers
+      pattern='^[0-9]{5}$'
 
-    if [[ $serial_number =~ $pattern ]]; then
-        echo "Serial number is in the correct format."
-        break
+      if [[ $serial_number =~ $pattern ]]; then
+          echo "Serial number is in the correct format."
+          break
+      else
+          echo -e "\e[31mError: Serial number is not in the correct format. It should consist of exactly 5 numbers.\e[0m"
+      fi
     else
-        echo -e "\e[31mError: Serial number is not in the correct format. It should consist of exactly 4 numbers.\e[0m"
+      echo "Please enter the serial number of the robot (Only 4 digits, the platform model will be automatically added):"
+      read serial_number
+      # Regular expression to match 4 numbers
+      pattern='^[0-9]{4}$'
+
+      if [[ $serial_number =~ $pattern ]]; then
+          echo "Serial number is in the correct format."
+          break
+      else
+          echo -e "\e[31mError: Serial number is not in the correct format. It should consist of exactly 4 numbers.\e[0m"
+      fi
     fi
+
   done
 
   platform_serial_number="$platform-$serial_number"
