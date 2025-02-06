@@ -472,6 +472,7 @@ if [ ! "$EUID" -eq 0 ]; then
     sudo hostnamectl set-hostname "$hostname_string"
     # Display the new hostname
     log_info "Hostname changed to '$hostname_string'."
+    sudo sed -i "s/clearpath-unassigned/$hostname_string/g" /etc/hosts
     # Notify the user to restart for changes to take effect
     log_info "Please restart your system for the changes to take effect."
   else
