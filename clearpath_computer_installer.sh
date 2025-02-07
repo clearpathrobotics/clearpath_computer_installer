@@ -259,7 +259,8 @@ step_setup_cpr_packge_server() {
 step_install_ros_packages() {
   log_info "Updating packages and installing ROS 2"
   sudo apt -y -qq update
-  sudo apt install -y -qq  iw ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool
+  # All ROS distros
+  sudo apt install -y -qq  iw ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool python3-ds4drv
   if [[ "$ROS_VERSION" == "humble" ]]; then
     sudo apt -y -qq  install  python3-clearpath-computer-setup
   elif [[ "$ROS_VERSION" == "jazzy" ]]; then
