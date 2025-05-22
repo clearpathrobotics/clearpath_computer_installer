@@ -112,7 +112,25 @@ sudo apt -y -qq update
 sudo apt -y -qq install -t noble-backports cockpit
 sudo apt -y -qq install ros-${ROS_DISTRO}-foxglove-bridge cockpit-ros2-diagnostics
 
-echo "[WebService]
-AllowUnencrypted=true" | sudo tee /etc/cockpit/cockpit.conf > /dev/null
+# Config file name
+file_name="/etc/cockpit/cockpit.conf"
+file_contents="[WebService]
+AllowUnencrypted=true"
+
+prompt_YESno allow_unencrypted "Allow unencrypted connections for cockpit? Required for ROS connectivity."
+if [[ $allow_unencrypted == "y" ]]; then
+  # Check if the file exists
+  if [ -f "$file_name" ]; then
+    if ! grep -q "AllowUnencrypted=true" $file_name; then
+      log_warn "$file_name file already exists but does not contain the WebService AllowUnencrypted=true line. Must be manually verified / added."
+    else
+      log_info "$file_name file already exists and contains the AllowUnencrypted=true line. No action needed."
+    fi
+  else
+    echo "$file_contents" | sudo tee /etc/cockpit/cockpit.conf > /dev/null
+  fi
+else
+  log_error "Skipping unencrypted connection for cockpit. ROS connectivity requires this so either it must be set up manually, cockpit only accessed from localhost or cockpit put behind a reverse proxy."
+fi
 
 log_done "Installed cockpit"
