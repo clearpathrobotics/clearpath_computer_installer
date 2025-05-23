@@ -484,6 +484,13 @@ if [ ! "$EUID" -eq 0 ]; then
 
   source /opt/ros/$ROS_VERSION/setup.bash
 
+  if [[ "$ROS_VERSION" != "humble" ]]; then
+    prompt_YESno install_cockpit "Would you like to install Cockpit webserver for management and diagnostics?"
+    if [[ $install_cockpit == "y" ]]; then
+      wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/cockpit_installer.sh && bash -e cockpit_installer.sh
+    fi
+  fi
+
   prompt_YESno install_service "Would you like to install Clearpath services?"
   if [[ $install_service == "y" ]]; then
     log_info "Installing clearpath robot service"
