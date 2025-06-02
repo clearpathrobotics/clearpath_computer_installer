@@ -230,8 +230,7 @@ step_setup_osrf_packge_server() {
   else
     sudo apt -y -qq install software-properties-common
     sudo add-apt-repository universe -y
-    sudo apt -y -qq update &&
-    sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
+    sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
     export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
