@@ -216,17 +216,30 @@ step_get_os_and_ros_version() {
 step_setup_osrf_packge_server() {
   log_info "Setup Open Robotics package server to install ROS 2 $ROS_VERSION"
 
-  # Check if ROS 2 sources are already installed
   if [ -e /etc/apt/sources.list.d/ros2.list ]; then
+    # Remove old ROS 2 installation if present
+    # See https://discourse.ros.org/t/ros-signing-key-migration-guide/43937
+    log_info "Detected old ROS 2 installation"
+    sudo rm /etc/apt/sources.list.d/ros2.list
+    sudo rm /usr/share/keyrings/ros-archive-keyring.gpg
+  fi
+
+  # Check if ROS 2 sources are already installed
+  if dpkg -s ros2-apt-source &> /dev/null; then
     log_warn "ROS 2 sources exist, skipping"
   else
     sudo apt -y -qq install software-properties-common
     sudo add-apt-repository universe -y
     sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
-    sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+    # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
+    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+    curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb"
+    sudo apt install /tmp/ros2-apt-source.deb
+    sudo rm /tmp/ros2-apt-source.deb
+
     # Check if sources were added
-    if [ ! -e /etc/apt/sources.list.d/ros2.list ]; then
+    if ! dpkg -s ros2-apt-source &> /dev/null; then
       log_error "Unable to add ROS 2 package server, exiting"
       exit 0
     fi
