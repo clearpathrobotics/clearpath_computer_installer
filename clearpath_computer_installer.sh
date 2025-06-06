@@ -198,15 +198,15 @@ step_get_os_and_ros_version() {
 
   # Determine the ROS 2 version based on the OS
   if [[ "$UBUNTU_VERSION" == "jammy" ]]; then
-    ROS_VERSION="humble"
+    ROS_DISTRO_MANUAL="humble"
   elif [[ "$UBUNTU_VERSION" == "noble" ]]; then
-    ROS_VERSION="jazzy"
+    ROS_DISTRO_MANUAL="jazzy"
   else
-    ROS_VERSION="unsupported"
+    ROS_DISTRO_MANUAL="unsupported"
   fi
 
   # Exit the script if the ROS version is unsupported
-  if [[ "$ROS_VERSION" == "unsupported" ]]; then
+  if [[ "$ROS_DISTRO_MANUAL" == "unsupported" ]]; then
     log_error "Ubuntu version ($UBUNTU_VERSION) does not have a supported version of ROS 2, exiting"
     exit 0
   fi
@@ -214,7 +214,7 @@ step_get_os_and_ros_version() {
 
 # Setup Open Robotics package server to install ROS 2
 step_setup_osrf_packge_server() {
-  log_info "Setup Open Robotics package server to install ROS 2 $ROS_VERSION"
+  log_info "Setup Open Robotics package server to install ROS 2 $ROS_DISTRO_MANUAL"
 
   if [ -e /etc/apt/sources.list.d/ros2.list ]; then
     # Remove old ROS 2 installation if present
@@ -273,10 +273,10 @@ step_install_ros_packages() {
   log_info "Updating packages and installing ROS 2"
   sudo apt -y -qq update
   # All ROS distros
-  sudo apt install -y -qq  iw ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool python3-ds4drv
-  if [[ "$ROS_VERSION" == "humble" ]]; then
+  sudo apt install -y -qq  iw ros-$ROS_DISTRO_MANUAL-ros-base ros-$ROS_DISTRO_MANUAL-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool python3-ds4drv
+  if [[ "$ROS_DISTRO_MANUAL" == "humble" ]]; then
     sudo apt -y -qq  install python3-clearpath-computer-setup
-  elif [[ "$ROS_VERSION" == "jazzy" ]]; then
+  elif [[ "$ROS_DISTRO_MANUAL" == "jazzy" ]]; then
     sudo apt -y -qq  install ros-jazzy-foxglove-bridge python3-pip openssh-server
     sudo pip install --break-system-packages canopen
   fi
@@ -347,7 +347,7 @@ step_get_platform_model
 step_get_os_and_ros_version
 
 # Check if A300 since it is only supported on Jazzy
-if [[ $platform == "a300" && $ROS_VERSION == "humble" ]]; then
+if [[ $platform == "a300" && $ROS_DISTRO_MANUAL == "humble" ]]; then
   log_error "Husky A300 is only supported on ROS 2 Jazzy, exiting"
   exit 1
 fi
@@ -402,7 +402,7 @@ if [ ! "$EUID" -eq 0 ]; then
     if [[ $update_config == "y" ]]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
       log_info "Creating default robot YAML for ${platform}"
-      sudo cp /opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo cp /opt/ros/$ROS_DISTRO_MANUAL/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         log_error "Clearpath robot YAML, exiting"
@@ -413,7 +413,7 @@ if [ ! "$EUID" -eq 0 ]; then
     fi
   else
     log_info "Creating default robot YAML for ${platform}"
-    sudo cp /opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo cp /opt/ros/$ROS_DISTRO_MANUAL/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
     sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
@@ -495,9 +495,9 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
   log_done "Checking hostname"
 
-  source /opt/ros/$ROS_VERSION/setup.bash
+  source /opt/ros/$ROS_DISTRO_MANUAL/setup.bash
 
-  if [[ "$ROS_VERSION" != "humble" ]]; then
+  if [[ "$ROS_DISTRO_MANUAL" != "humble" ]]; then
     prompt_YESno install_cockpit "Would you like to install Cockpit webserver for management and diagnostics?"
     if [[ $install_cockpit == "y" ]]; then
       wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/cockpit_installer.sh && bash -e cockpit_installer.sh
