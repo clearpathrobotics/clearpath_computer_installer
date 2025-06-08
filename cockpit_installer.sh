@@ -127,10 +127,34 @@ if [[ $allow_unencrypted == "y" ]]; then
       log_info "$file_name file already exists and contains the AllowUnencrypted=true line. No action needed."
     fi
   else
-    echo "$file_contents" | sudo tee /etc/cockpit/cockpit.conf > /dev/null
+    echo "$file_contents" | sudo tee $file_name > /dev/null
   fi
 else
   log_error "Skipping unencrypted connection for cockpit. ROS connectivity requires this so either it must be set up manually, cockpit only accessed from localhost or cockpit put behind a reverse proxy."
+fi
+
+# Disable the software update tab in cockpit because it does not work with networkd and can cause confusion.
+override_file_name="/etc/cockpit/packagekit.override.json"
+override_file_contents='{
+  "tools": {
+    "index": null
+  }
+}'
+
+prompt_YESno disable_update_tab "Hide software update tab in cockpit? This is recommended because it does not work with networkd and can cause confusion. Run updates in the terminal instead."
+if [[ $disable_update_tab == "y" ]]; then
+  # Check if the file exists
+  if [ -f "$override_file_name" ]; then
+    if ! grep -q '"index": null' $override_file_name; then
+      log_warn "$override_file_name file already exists but does not contain the \"index\": null line. Must be manually verified / added."
+    else
+      log_info "$override_file_name file already exists and contains the \"index\": null line. No action needed."
+    fi
+  else
+    echo "$override_file_contents" | sudo tee $override_file_name > /dev/null
+  fi
+else
+  log_error "Skipping hiding the software update tab for cockpit. Be aware that this tab may not work properly for Clearpath robots and may be misleading."
 fi
 
 log_done "Installed cockpit"
