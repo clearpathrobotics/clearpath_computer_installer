@@ -5,7 +5,7 @@ Contains a script to set up a Clearpath robot computer for ROS 2 Humble or Jazzy
 This full script includes setting of ROS 2 and Clearpath package servers, installing ROS 2 and Clearpath Robot packages and installing the Clearpath Robot Service.
 
 Additional Scripts that are run as part of the main script but can also be run independently:
-`cockpit_installer.sh` - To install cockpit and the ros2 plugin (available for Noble / Jazzy only)
+`cockpit_installer.sh` - To install cockpit and the ros2 plugin (script works for Ubuntu 24.04 (Noble) with ROS 2 Jazzy only)
 
 ## Usage
 
