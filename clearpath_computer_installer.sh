@@ -357,7 +357,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Check if the script is run as root
 if [ "$EUID" -eq 0 ]; then
- log_warn "You are the root user, this needs to be ran as a user to be completed."
+ log_warn "You are the root user, this needs to be run as a user to be completed."
 fi
 
 # Temporarily disable the blocking messages about restarting services in systems with needrestart installed
