@@ -39,7 +39,7 @@ repositories:
     url: https://github.com/ros-drivers/um7.git
     version: ros2
 
-  valence_bms:
-    type: git
-    url: https://gitlab.clearpathrobotics.com/research/valence_bms.git
-    version: 1.1.0
+#  valence_bms:
+#    type: git
+#    url: https://gitlab.clearpathrobotics.com/research/valence_bms.git
+#    version: 1.1.0
