@@ -204,6 +204,7 @@ sudo apt-get install -y \
 # We'll use yq to make some edits to robot.yaml later
 pip3 install yq
 export PATH=$PATH:$HOME/.local/bin
+grep -qxF 'export PATH=$PATH:$HOME/.local/bin' $HOME/.bashrc || echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
 
 if [ -f /opt/ros/$ROS_VERSION/setup.bash ];
 then
@@ -374,6 +375,6 @@ fi
 sudo systemctl enable clearpath-robot
 
 log_info "Setting up Clearpath environment..."
-grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc
+grep -qxF "source /etc/clearpath/setup.bash" $HOME/.bashrc || echo "source /etc/clearpath/setup.bash" >> $HOME/.bashrc
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
