@@ -1,0 +1,45 @@
+repositories:
+#  canfestival_ros:
+#    type: git
+#    url: git@gitlab.clearpathrobotics.com:research/canfestival_ros.git
+#    version: ros2
+
+  clearpath_robot:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_robot.git
+    version: humble
+
+  ewellix_lift:
+    type: git
+    url: https://github.com/clearpathrobotics/ewellix_lift.git
+    version: humble
+
+  micro_ros_agent:
+    type: git
+    url: https://github.com/micro-ROS/micro-ROS-Agent.git
+    version: humble
+
+  ros2_kortex:
+    type: git
+    url: https://github.com/Kinovarobotics/ros2_kortex.git
+    version: 0.2.3
+
+  serial_ros2:
+    type: git
+    url: https://github.com/clearpathrobotics/serial-ros2.git
+    version: master
+
+#  sevcon_ros:
+#    type: git
+#    url: https://gitlab.clearpathrobotics.com/research/sevcon_ros.git
+#    version: ros2
+
+  umx_driver:
+    type: git
+    url: https://github.com/ros-drivers/um7.git
+    version: ros2
+
+  valence_bms:
+    type: git
+    url: https://gitlab.clearpathrobotics.com/research/valence_bms.git
+    version: 1.1.0
