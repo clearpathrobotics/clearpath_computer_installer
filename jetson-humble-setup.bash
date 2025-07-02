@@ -244,6 +244,13 @@ log_info "Building the workspace..."
 log_info "  This can (and probably will) take a while."
 log_info "  Go make yourself a warm beverage and check back later."
 cd $HOME/colcon_ws
+colcon build
+
+# Udev
+log_info "Installing udev rules..."
+sudo cp $HOME/colcon_ws/src/clearpath_robot/clearpath_robot/debian/udev /etc/udev/rules.d/60-clearpath-robot.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 
 # Network setup
 log_info "Setting up netplan configuration..."
