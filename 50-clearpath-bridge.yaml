@@ -1,0 +1,29 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    bridge_enp:
+      match:
+        name: "enp*"
+      dhcp4: false
+      dhcp6: false
+    bridge_enx:
+      match:
+        name: "enx*"
+      dhcp4: false
+      dhcp6: false
+    bridge_eth:
+      match:
+        name: "eth*"
+      dhcp4: false
+      dhcp6: false
+  bridges:
+    br0:
+      addresses:
+      - "192.168.131.1/24"
+      dhcp4: true
+      dhcp6: false
+      interfaces:
+      - bridge_eth
+      - bridge_enx
+      - bridge_enp
