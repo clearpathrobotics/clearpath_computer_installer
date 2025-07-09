@@ -194,6 +194,8 @@ sudo apt-get update
 sudo apt-get install -y \
     jq \
     netplan.io \
+    bluez-tools \
+    jstest-gtk \
     python3-pip \
     python3-rosdep \
     python3-vcstool \
@@ -366,7 +368,7 @@ yq -i -y ".system.ros2.workspaces = [\"$HOME/colcon_ws/install/setup.bash\"]" /e
 # yq uses jq, jq 1.6 (ubuntu 22.04's available version) replaces 0.0 with 0, which causes issues with the generator
 # thankfully jq also expands arrays, so "xyz: [...]" gets expanded across multiple lines
 # we can use sed to just replace integer zero array instances with their float equivalents
-sed -i 's/- 0$/- 0.0/` /etc/clearpath/robot.yaml
+sed -i 's/- 0$/- 0.0/' /etc/clearpath/robot.yaml
 
 # Install systemd jobs
 prompt_YESno install_service "Would you like to install Clearpath services?"
@@ -388,5 +390,8 @@ sudo systemctl enable clearpath-robot
 
 log_info "Setting up Clearpath environment..."
 grep -qxF "source /etc/clearpath/setup.bash" $HOME/.bashrc || echo "source /etc/clearpath/setup.bash" >> $HOME/.bashrc
+
+# Bluetooth
+sudo systemctl enable bluetooth
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
