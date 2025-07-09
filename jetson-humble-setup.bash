@@ -363,6 +363,10 @@ yq -i -y ".system.hosts[0].hostname = \"$(hostname)\"" /etc/clearpath/robot.yaml
 # Add the workspace we created & built above
 yq -i -y ".system.ros2.workspaces = [\"$HOME/colcon_ws/install/setup.bash\"]" /etc/clearpath/robot.yaml
 
+# yq uses jq, jq 1.6 (ubuntu 22.04's available version) replaces 0.0 with 0, which causes issues with the generator
+# use sed to fix this
+sed -i 's/- 0$/- 0.0/` /etc/clearpath/robot.yaml
+
 # Install systemd jobs
 prompt_YESno install_service "Would you like to install Clearpath services?"
 if [[ $install_service == "y" ]]; then
