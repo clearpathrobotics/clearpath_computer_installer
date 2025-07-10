@@ -189,6 +189,7 @@ sudo apt-get install -y \
     jq \
     netplan.io \
     bluez-tools \
+    chrony \
     jstest-gtk \
     python3-pip \
     python3-rosdep \
