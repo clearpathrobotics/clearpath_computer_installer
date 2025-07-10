@@ -184,6 +184,7 @@ sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb
 # Install initial dependencies
 log_info "Installing core ROS components and build tools..."
 sudo apt-get update
+sudo apt-get upgrade -y
 sudo apt-get install -y \
     nano \
     jq \
