@@ -192,6 +192,7 @@ sudo sh -c 'echo "deb https://packages.clearpathrobotics.com/stable/ubuntu $(lsb
 log_info "Installing core ROS components and build tools..."
 sudo apt-get update
 sudo apt-get install -y \
+    nano \
     jq \
     netplan.io \
     bluez-tools \
@@ -220,6 +221,7 @@ fi
 log_info "Setting up rosdep..."
 sudo rosdep init
 sudo wget https://raw.githubusercontent.com/clearpathrobotics/public-rosdistro/master/rosdep/50-clearpath.list -O /etc/ros/rosdep/sources.list.d/50-clearpath.list
+rosdep update
 
 # Workspace
 log_info "Creating workspace for source installation..."
