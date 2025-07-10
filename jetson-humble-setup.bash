@@ -191,6 +191,7 @@ sudo apt-get install -y \
     netplan.io \
     bluez-tools \
     chrony \
+    screen \
     jstest-gtk \
     python3-pip \
     python3-rosdep \
