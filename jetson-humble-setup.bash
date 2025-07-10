@@ -259,6 +259,7 @@ if ping -c 1 gitlab.clearpathrobotics.com &> /dev/null; then
     wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O $HOME/setup-lv426.sh
     chmod +x $HOME/setup-lv426.sh
 fi
+sudo systemctl enable systemd-networkd
 
 # Robot platform
 # Note: for Jetson we only support Jackal, Ridgeback, and Dingo
