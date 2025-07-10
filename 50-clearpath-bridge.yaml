@@ -7,6 +7,11 @@ network:
         name: "enp*"
       dhcp4: false
       dhcp6: false
+    bridge_enP:
+      match:
+        name: "enP*"
+      dhcp4: false
+      dhcp6: false
     bridge_enx:
       match:
         name: "enx*"
@@ -27,3 +32,4 @@ network:
       - bridge_eth
       - bridge_enx
       - bridge_enp
+      - bridge_enP
