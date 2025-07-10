@@ -249,6 +249,7 @@ log_info "  This can (and probably will) take a while."
 log_info "  Go make yourself a warm beverage and check back later."
 cd $HOME/colcon_ws
 colcon build
+source source install/setup.bash
 
 # Udev
 log_info "Installing udev rules..."
@@ -313,6 +314,7 @@ step_get_platform_model() {
   echo "Selected platform: ${platform}."
   log_space
 }
+step_get_platform_model
 
 # Clearpath robot.yaml setup
 if [ -e /etc/clearpath/robot.yaml ]; then
@@ -321,7 +323,7 @@ if [ -e /etc/clearpath/robot.yaml ]; then
   if [[ $update_config == "y" ]]; then
     sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
     log_info "Creating default robot YAML for ${platform}"
-    sudo cp /opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo cp $(/opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
       log_error "Failed to create Clearpath robot YAML"
