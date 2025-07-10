@@ -64,14 +64,12 @@ prompt_YESno() {
   echo -e "\e[39m$__prompt\e[0m"
   echo "Y/n: "
 
-  if [[ $AUTO_YES == 1 ]];
-  then
+  if [[ $AUTO_YES == 1 ]]; then
     echo "Automatically answering Yes"
     eval $__resultvar="y"
   else
     read answer
-    if [[ $answer =~ ^[n,N].* ]];
-    then
+    if [[ $answer =~ ^[n,N].* ]]; then
       eval $__resultvar="n"
     else
       eval $__resultvar="y"
@@ -90,14 +88,12 @@ prompt_yesNO() {
   echo -e "\e[39m$__prompt\e[0m"
   echo "y/N: "
 
-  if [[ $AUTO_YES == 1 ]];
-  then
+  if [[ $AUTO_YES == 1 ]]; then
     echo "Automatically answering No"
     eval $__resultvar="n"
   else
     read answer
-    if [[ $answer =~ ^[y,Y].* ]];
-    then
+    if [[ $answer =~ ^[y,Y].* ]]; then
       eval $__resultvar="y"
     else
       eval $__resultvar="n"
@@ -107,8 +103,7 @@ prompt_yesNO() {
 
 # Check if we're running as root; we should not be
 current_user="$(whoami)"
-if [ "${current_user}" == "root" ];
-then
+if [ "${current_user}" == "root" ]; then
     log_error "This script must not be run as root"
     exit 1
 else
@@ -118,14 +113,12 @@ fi
 # Check OS version and architecture
 # Should be 22.04 and aarch64
 ubuntu_release="$(lsb_release -r -s | tail -1)"
-if ! [ "${ubuntu_release}" == "22.04" ];
-then
+if ! [ "${ubuntu_release}" == "22.04" ]; then
   log_error "This script must be run on Ubuntu 22.04. Detected ${ubuntu_release}"
   exit 1
 fi
 architecture="$(arch)"
-if ! [ "${architecture}" == "aarch64" ];
-then
+if ! [ "${architecture}" == "aarch64" ]; then
   log_error "This script must be run on aarch64. Detected ${architecture}"
   exit 1
 fi
@@ -209,8 +202,7 @@ pip3 install yq
 export PATH=$PATH:$HOME/.local/bin
 grep -qxF 'export PATH=$PATH:$HOME/.local/bin' $HOME/.bashrc || echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
 
-if [ -f /opt/ros/$ROS_VERSION/setup.bash ];
-then
+if [ -f /opt/ros/$ROS_VERSION/setup.bash ]; then
   source /opt/ros/$ROS_VERSION/setup.bash
 else
   log_error "/opt/ros/$ROS_VERSION/setup.bash does not exist. Did ros_base install correctly?"
@@ -262,8 +254,7 @@ log_info "Setting up netplan configuration..."
 cd $HOME
 wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/50-clearpath-bridge.yaml
 sudo mv 50-clearpath-bridge.yaml /etc/netplan
-if ping -c 1 gitlab.clearpathrobotics.com &> /dev/null;
-then
+if ping -c 1 gitlab.clearpathrobotics.com &> /dev/null; then
     log_info "Downloading wireless configuration script for use later..."
     wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O $HOME/setup-lv426.sh
     chmod +x $HOME/setup-lv426.sh
@@ -282,8 +273,7 @@ ROBOT_CHOICE=-1
 
 # Get the platform model from the user
 step_get_platform_model() {
-  if [[ $ROBOT_CHOICE -eq -1 ]];
-  then
+  if [[ $ROBOT_CHOICE -eq -1 ]]; then
     echo ""
     prompt_option ROBOT_CHOICE "Which robot platform are you installing?" "Clearpath Jackal J100" "Clearpath Ridgeback R100" "Clearpath Dingo-D DD100" "Clearpath Dingo-D DD150" "Clearpath Dingo-O DO100" "Clearpath Dingo-O DO150"
   fi
@@ -317,13 +307,17 @@ step_get_platform_model() {
 step_get_platform_model
 
 # Clearpath robot.yaml setup
+if ! [ -d /etc/clearpath ]; then
+  sudo mkdir /etc/clearpath
+  sudo chown ${current_user} /etc/clearpath
+fi
 if [ -e /etc/clearpath/robot.yaml ]; then
   log_warn "Clearpath Robot YAML exists"
   prompt_YESno update_config "Would you like to change Clearpath Robot YAML?"
   if [[ $update_config == "y" ]]; then
     sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
     log_info "Creating default robot YAML for ${platform}"
-    sudo cp $(/opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+    sudo cp $(ros2 pkg prefix clearpath_config)/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
     # Check if sources were added
     if [ ! -e /etc/clearpath/robot.yaml ]; then
       log_error "Failed to create Clearpath robot YAML"
@@ -334,7 +328,7 @@ if [ -e /etc/clearpath/robot.yaml ]; then
   fi
 else
   log_info "Creating default robot YAML for ${platform}"
-  cp /opt/ros/$ROS_VERSION/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+  cp $(ros2 pkg prefix clearpath_config)/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
   # Check if sources were added
   if [ ! -e /etc/clearpath/robot.yaml ]; then
     log_error "Failed to create Clearpath robot YAML"
