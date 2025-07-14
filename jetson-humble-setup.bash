@@ -400,5 +400,7 @@ sudo systemctl enable bluetooth
 # slcan dependencies
 wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/slcan.ko
 sudo mv slcan.ko /lib/modules/$(uname -r)/kernel/drivers/net/can/
+sudo depmod
+sudo modprobe slcan
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
