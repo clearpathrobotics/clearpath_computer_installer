@@ -198,7 +198,8 @@ sudo apt-get install -y \
     python3-vcstool \
     python3-colcon-common-extensions \
     ros-dev-tools \
-    ros-$ROS_VERSION-ros-base
+    ros-$ROS_VERSION-ros-base \
+    ros-$ROS_VERSION-ros2-socketcan \
 
 # We'll use yq to make some edits to robot.yaml later
 pip3 install yq
