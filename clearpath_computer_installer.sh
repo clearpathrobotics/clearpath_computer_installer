@@ -439,7 +439,7 @@ if [ ! "$EUID" -eq 0 ]; then
         log_error "Serial number is not in the correct format. It should consist of exactly 5 numbers."
       fi
     else
-      log_info "Please enter the serial number of the robot (Only last 4 digits, the platform model will be automatically added):"
+      log_info "Please enter the serial number of the robot (Only last 4 digits and omit the leading digits, the platform model will be automatically added):"
       read serial_number
       # Regular expression to match 4 numbers
       pattern='^[0-9]{4}$'
