@@ -273,12 +273,10 @@ step_install_ros_packages() {
   log_info "Updating packages and installing ROS 2"
   sudo apt -y -qq update
   # All ROS distros
-  sudo apt install -y -qq  iw ros-$ROS_DISTRO_MANUAL-ros-base ros-$ROS_DISTRO_MANUAL-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool python3-ds4drv
-  if [[ "$ROS_DISTRO_MANUAL" == "humble" ]]; then
-    sudo apt -y -qq  install python3-clearpath-computer-setup
-  elif [[ "$ROS_DISTRO_MANUAL" == "jazzy" ]]; then
-    sudo apt -y -qq  install ros-jazzy-foxglove-bridge python3-pip openssh-server
-    sudo pip install --break-system-packages canopen
+  sudo apt install -y -qq  iw ros-$ROS_DISTRO_MANUAL-ros-base ros-$ROS_DISTRO_MANUAL-clearpath-robot python3-argcomplete ros-dev-tools python3-vcstool python3-ds4drv python3-clearpath-computer-setup
+
+  if [[ "$ROS_DISTRO_MANUAL" == "jazzy" ]]; then
+    sudo apt -y -qq  install ros-jazzy-foxglove-bridge openssh-server
   fi
   log_done "Updating packages and installing ROS 2"
 }
