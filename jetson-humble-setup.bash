@@ -430,7 +430,7 @@ sudo systemctl enable bluetooth
 prompt_YESno configure_m2_usb "Connect M.2 Key-E slot to USB-A?\n(Forecr carrier board only, needed for bluetooth support)"
 if [[ $configure_m2_usb == "y" ]]; then
   sudo bash -c "echo 352 > /sys/class/gpio/export"
-  sudo bach -c "echo high > /sys/class/gpio/PA.04/direction"
+  sudo bash -c "echo high > /sys/class/gpio/PA.04/direction"
 fi
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
