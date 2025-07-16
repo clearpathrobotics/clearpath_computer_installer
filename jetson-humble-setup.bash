@@ -128,44 +128,29 @@ fi
 
 # Basic user & group setup
 # Make sure we're in the necessary groups for permissions to work properly
+USER_GROUPS="dialout
+flirimaging
+input
+plugdev
+video"
 log_info "Setting up groups..."
-if [ $(getent group video) ]; then
-  log_info "video group already exists";
-else
-  log_info "Adding video group";
-  sudo addgroup video;
-fi
-if id -nGz "$(whoami)" | grep -qzxF "video"; then
-  log_info "User:$(whoami) is already in video group";
-else
-  log_info "Adding user:$(whoami) to video group";
-  sudo usermod -a -G video $(whoami);
-fi
+for GROUP in $USER_GROUPS; do
+  # 1) create the group if necessary
+  if [ $(getent group ${GROUP}) ]; then
+    log_info "$GROUP group already exists";
+  else
+    log_info "Adding $GROUP group";
+    sudo addgroup $GROUP;
+  fi
 
-if id -nGz "$(whoami)" | grep -qzxF "dialout"; then
-  log_info "User:$(whoami) is already in dialout group";
-else
-  log_info "Adding user:$(whoami) to dialout group";
-  sudo usermod -a -G dialout $(whoami);
-fi
-if id -nGz "$(whoami)" | grep -qzxF "plugdev"; then
-  log_info "User:$(whoami) is already in plugdev group";
-else
-  log_info "Adding user:$(whoami) to plugdev group";
-  sudo usermod -a -G plugdev $(whoami);
-fi
-if [ $(getent group flirimaging) ]; then
-  log_info "flirimaging group already exists";
-else
-  log_info "Adding flirimaging group";
-  sudo addgroup flirimaging;
-fi
-if id -nGz "$(whoami)" | grep -qzxF "flirimaging"; then
-  log_info "User:$(whoami) is already in flirimaging group";
-else
-  log_info "Adding user:$(whoami) to flirimaging group";
-  sudo usermod -a -G flirimaging $(whoami);
-fi
+  # 2) add the user to the group if necessary
+  if id -nGz "$(whoami)" | grep -qzxF "$GROUP"; then
+    log_info "User:$(whoami) is already in $GROUP group";
+  else
+    log_info "Adding user:$(whoami) to $GROUP group";
+    sudo usermod -a -G $GROUP $(whoami);
+  fi
+done
 
 # Additional kernel modules
 # Check kernel is compatible with our pre-built modules
