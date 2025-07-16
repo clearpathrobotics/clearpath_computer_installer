@@ -429,8 +429,20 @@ sudo systemctl enable bluetooth
 # if it's a Forecr carrier we need to connect the M.2 to the USB A
 prompt_YESno configure_m2_usb "Connect M.2 Key-E slot to USB-A?\n(Forecr carrier board only, needed for bluetooth support)"
 if [[ $configure_m2_usb == "y" ]]; then
-  sudo bash -c "echo 352 > /sys/class/gpio/export"
-  sudo bash -c "echo high > /sys/class/gpio/PA.04/direction"
+  if ! [ -f /etc/rc.local ]; then
+    sudo bash -c 'echo "#!/bin/bash" > /etc/rc.local'
+    sudo chmod +x /etc/rc.local
+  fi
+
+  if [ -z "$(cat /etc/rc.local | grep 'echo 352 > /sys/class/gpio/export')" ]; then
+    sudo bash -c "echo 'echo 352 > /sys/class/gpio/export' >> /etc/rc.local"
+  fi
+
+  if [ -z "$(cat /etc/rc.local | grep 'echo high > /sys/class/gpio/PA.04/direction')" ]; then
+    sudo bash -c "echo 'echo high > /sys/class/gpio/PA.04/direction' >> /etc/rc.local"
+  fi
+
+  sudo /etc/rc.local
 fi
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
