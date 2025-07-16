@@ -3,6 +3,9 @@
 # This script is only for Humble
 ROS_VERSION="humble"
 
+# This script has only beel validated with Jetpack 6.1's default kernel
+SUPPORTED_KERNEL="5.15.148-tegra"
+
 log_space() {
   # Print a blank line
   echo ""
@@ -164,6 +167,32 @@ else
   sudo usermod -a -G flirimaging $(whoami);
 fi
 
+# Additional kernel modules
+# Check kernel is compatible with our pre-built modules
+# The following kernel modules are not included by default, but are needed:
+#  - slcan (needed for CAN over ethernet on Dingo and Ridgeback)
+#  - uinput (needed for ds4drv service; PS4 controller will work without it, but won't have
+#           low-signal cutoff support and may latch if out of range)
+if [[ "$(uname -r)" == "${SUPPORTED_KERNEL}" ]]; then
+  log_info "Installing additional kernel modules for $(uname -r)..."
+  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/slcan.ko
+  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/uinput.ko
+  sudo mv slcan.ko /lib/modules/$(uname -r)/kernel/drivers/net/can/
+  sudo mv uinput.ko /lib/modules/$(uname -r)/kernel/drivers/input/misc/
+  sudo depmod
+  sudo modprobe slcan
+  sudo modprobe uinput
+else
+  prompt_yesNO continue_bad_kernel "WARNING: Kernel does not match ${SUPPORTED_KERNEL}. Some required modules may need to be built manually.\nContinue with installation anyway?"
+
+  if [[ "$continue_bad_kernel" == "n" ]]; then
+    log_info "User aborted"
+    exit 0
+  else
+    log_warn "For full support, build and install the following kernel modules:\n - slcan.ko\n - uinput.ko"
+  fi
+fi
+
 # Enable ROS sources
 # https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
 log_info "Enabling ROS software sources..."
@@ -186,13 +215,13 @@ log_info "Installing core ROS components and build tools..."
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install -y \
-    nano \
-    jq \
-    netplan.io \
     bluez-tools \
     chrony \
-    screen \
+    jq \
     jstest-gtk \
+    nano \
+    netplan.io \
+    python3-ds4drv \
     python3-pip \
     python3-rosdep \
     python3-vcstool \
@@ -200,6 +229,7 @@ sudo apt-get install -y \
     ros-dev-tools \
     ros-$ROS_VERSION-ros-base \
     ros-$ROS_VERSION-ros2-socketcan \
+    screen \
 
 # We'll use yq to make some edits to robot.yaml later
 pip3 install yq
@@ -396,11 +426,11 @@ grep -qxF "source /etc/clearpath/setup.bash" $HOME/.bashrc || echo "source /etc/
 
 # Bluetooth
 sudo systemctl enable bluetooth
-
-# slcan dependencies
-wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/slcan.ko
-sudo mv slcan.ko /lib/modules/$(uname -r)/kernel/drivers/net/can/
-sudo depmod
-sudo modprobe slcan
+# if it's a Forecr carrier we need to connect the M.2 to the USB A
+prompt_YESno configure_m2_usb "Connect M.2 Key-E slot to USB-A?\n(Forecr carrier board only, needed for bluetooth support)"
+if [[ $configure_m2_usb == "y" ]]; then
+  sudo bash -c "echo 352 > /sys/class/gpio/export"
+  sudo bach -c "echo high > /sys/class/gpio/PA.04/direction"
+fi
 
 log_done "Done setting up Jetson with ROS 2 Humble. Please reboot now"
