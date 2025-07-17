@@ -427,7 +427,7 @@ if [ ! "$EUID" -eq 0 ]; then
   while true; do
     # A300 uses 5 digit serial numbers, others uses 4 digit serial numbers
     if [[ $platform == "a300" ]]; then
-      log_info "Please enter the serial number of the robot (Only 5 digits, the platform model will be automatically added):"
+      log_info "Please enter the serial number of the robot (Only last 5 digits, the platform model will be automatically added):"
       read serial_number
       # Regular expression to match 5 numbers
       pattern='^[0-9]{5}$'
