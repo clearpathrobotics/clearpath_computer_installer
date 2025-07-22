@@ -256,14 +256,22 @@ cd $HOME/colcon_ws
 log_info "Installing dependencies with rosdep..."
 log_info "  Some dependencies are not available for ${architecture}. Don't panic."
 source /opt/ros/$ROS_VERSION/setup.bash
-rosdep install --from-paths src --ignore-src -r -y
+for i in $(seq 1 3); do
+  log_info "Installing dependencies with rosdep. Attempt $i of 3...."
+  if rosdep install --from-paths src --ignore-src -r -y; then
+    break
+  fi
+done
 
 # Build workspace
 log_info "Building the workspace..."
 log_info "  This can (and probably will) take a while."
 log_info "  Go make yourself a warm beverage and check back later."
 cd $HOME/colcon_ws
-colcon build
+if ! colcon build; then
+  log_error "Failed to build workspace."
+  exit 1
+fi
 source install/setup.bash
 
 # Udev
