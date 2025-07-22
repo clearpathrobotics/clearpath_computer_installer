@@ -206,6 +206,8 @@ sudo apt-get install -y \
     jstest-gtk \
     nano \
     netplan.io \
+    nvidia-jetpack \
+    nvidia-jetpack-dev \
     python3-ds4drv \
     python3-pip \
     python3-rosdep \
