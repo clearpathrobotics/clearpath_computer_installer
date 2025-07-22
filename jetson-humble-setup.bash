@@ -252,9 +252,11 @@ patch -p1 < ros_kortex_arm.patch
 cd ..
 
 # Install dependencies
+cd $HOME/colcon_ws
 log_info "Installing dependencies with rosdep..."
 log_info "  Some dependencies are not available for ${architecture}. Don't panic."
-rosdep install --from-paths . --ignore-src -r -y
+source /opt/ros/$ROS_VERSION/setup.bash
+rosdep install --from-paths src --ignore-src -r -y
 
 # Build workspace
 log_info "Building the workspace..."
@@ -262,7 +264,7 @@ log_info "  This can (and probably will) take a while."
 log_info "  Go make yourself a warm beverage and check back later."
 cd $HOME/colcon_ws
 colcon build
-source source install/setup.bash
+source install/setup.bash
 
 # Udev
 log_info "Installing udev rules..."
