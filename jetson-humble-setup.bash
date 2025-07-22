@@ -339,6 +339,7 @@ if [ -e /etc/clearpath/robot.yaml ]; then
   log_warn "Clearpath Robot YAML exists"
   prompt_YESno update_config "Would you like to change Clearpath Robot YAML?"
   if [[ $update_config == "y" ]]; then
+    sudo chown -R ${current_user} /etc/clearpath
     sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
     log_info "Creating default robot YAML for ${platform}"
     sudo cp $(ros2 pkg prefix clearpath_config)/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
@@ -396,9 +397,8 @@ sed -i 's/- 0$/- 0.0/' /etc/clearpath/robot.yaml
 prompt_YESno install_service "Would you like to install Clearpath services?"
 if [[ $install_service == "y" ]]; then
   log_info "Installing clearpath robot service"
-  ros2 run clearpath_robot install
-
-  if [ $? -eq 0 ]; then
+  if ros2 run clearpath_robot install; then
+    sudo systemctl daemon-reload && sudo systemctl start clearpath-robot
     log_done "Installing Clearpath robot service"
   else
     log_error "Failed to install Clearpath robot service"
