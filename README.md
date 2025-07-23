@@ -17,3 +17,11 @@ Install JetPack 6.2.x (6.2.1 is the latest at the time of writing) per the manuf
 wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/jetson-humble-setup.bash && bash -e jetson-humble-setup.bash
 ```
 This script has been tested with the Nvidia Orin NX on a [Forecr ORNX](https://www.forecr.io/products/carrier-board-dsboard-ornx) carrier board. For step-by-step instructions on installing JetPack on this setup, see [Forecr's instructions](https://www.forecr.io/blogs/installation/jetpack-6-x-installation-for-dsboard-ornx).
+
+### M.2 Wireless/Bluetooth support on ORNX boards
+By default the ORNX carrier board does not have a USB connection to the M.2 Key-E socket, in which the wireless+bluetooth card is normally installed. To enable bluetooth support the following commands must be run:
+```
+sudo echo 352 > /sys/class/gpio/export
+sudo echo high > /sys/class/gpio/PA.04/direction
+```
+These commands can be added to `/etc/rc.local` by the `jetson-humble-setup.bash` script by answering `Y` when prompted. These commands _disconnect_ one of the carrier board's USB-A sockets and redirects the USB connection to the M.2 Key-E socket. This means that only one USB port will be usable and the other is not. Be careful when connecting USB devices and ensure only the _connected_ USB port is used.
