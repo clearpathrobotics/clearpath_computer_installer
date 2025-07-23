@@ -423,8 +423,8 @@ grep -qxF "source /etc/clearpath/setup.bash" $HOME/.bashrc || echo "source /etc/
 
 # Bluetooth
 sudo systemctl enable bluetooth
-# if it's a Forecr carrier we need to connect the M.2 to the USB A
-prompt_YESno configure_m2_usb "Connect M.2 Key-E slot to USB-A?\n(Forecr carrier board only, needed for bluetooth support)"
+# if it's a Forecr ORNX carrier we need to connect the M.2 to the USB A for bluetooth support
+prompt_YESno configure_m2_usb "Connect M.2 Key-E slot to USB-A?\n(Forecr ORNX carrier board only, needed for bluetooth support)"
 if [[ $configure_m2_usb == "y" ]]; then
   if ! [ -f /etc/rc.local ]; then
     sudo bash -c 'echo "#!/bin/bash" > /etc/rc.local'
