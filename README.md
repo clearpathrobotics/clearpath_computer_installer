@@ -14,7 +14,7 @@ wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_i
 
 Install JetPack 6.2.x (6.2.1 is the latest at the time of writing) per the manufacturer's instructions. Then connect the Jetson to the internet and run the following command:
 ```
-wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/jetson-humble-setup.bash && bash -e jetson-humble-setup.bash
+wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jetson-setup/jetson-humble-setup.bash && bash -e jetson-humble-setup.bash
 ```
 This script has been tested with the Nvidia Orin NX on a [Forecr ORNX](https://www.forecr.io/products/carrier-board-dsboard-ornx) carrier board. For step-by-step instructions on installing JetPack on this setup, see [Forecr's instructions](https://www.forecr.io/blogs/installation/jetpack-6-x-installation-for-dsboard-ornx).
 

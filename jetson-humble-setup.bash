@@ -160,8 +160,8 @@ done
 #           low-signal cutoff support and may latch if out of range)
 if [[ "$(uname -r)" == "${SUPPORTED_KERNEL}" ]]; then
   log_info "Installing additional kernel modules for $(uname -r)..."
-  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/slcan.ko
-  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/feature/humble-jetson/uinput.ko
+  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/jetson-setup/slcan.ko
+  wget https://github.com/clearpathrobotics/clearpath_computer_installer/raw/refs/heads/jetson-setup/uinput.ko
   sudo mv slcan.ko /lib/modules/$(uname -r)/kernel/drivers/net/can/
   sudo mv uinput.ko /lib/modules/$(uname -r)/kernel/drivers/input/misc/
   sudo depmod
@@ -243,11 +243,11 @@ cd $HOME/colcon_ws/src
 
 # Clone & patch packages
 log_info "Downloading source packages..."
-wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/jetson-humble.repos
+wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jetson-setup/jetson-humble.repos
 vcs import --input jetson-humble.repos
 log_info "Patching ros_kortex for ${architecture}..."
 cd ros2_kortex
-wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/ros_kortex_arm.patch
+wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jetson-setup/ros_kortex_arm.patch
 patch -p1 < ros_kortex_arm.patch
 cd ..
 
@@ -283,7 +283,7 @@ sudo udevadm trigger
 # Network setup
 log_info "Setting up netplan configuration..."
 cd $HOME
-wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/feature/humble-jetson/50-clearpath-bridge.yaml
+wget https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/refs/heads/jetson-setup/50-clearpath-bridge.yaml
 sudo mv 50-clearpath-bridge.yaml /etc/netplan
 if ping -c 1 gitlab.clearpathrobotics.com &> /dev/null; then
     log_info "Downloading wireless configuration script for use later..."
