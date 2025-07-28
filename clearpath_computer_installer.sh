@@ -334,6 +334,56 @@ setup_change_net_timeout() {
   log_done "Configuring network service, if needed"
 }
 
+step_setup_groups() {
+  log_info "Setting up groups\e[0m"
+  USER_GROUPS="dialout
+  flirimaging
+  input
+  plugdev
+  video"
+  for GROUP in $USER_GROUPS; do
+    # 1) create the group if necessary
+    if [ $(getent group ${GROUP}) ]; then
+      log_info "$GROUP group already exists";
+    else
+      log_info "Adding $GROUP group";
+      sudo addgroup $GROUP;
+    fi
+  
+    # 2) add the user to the group if necessary
+    if id -nGz "$(whoami)" | grep -qzxF "$GROUP"; then
+      log_info "User:$(whoami) is already in $GROUP group";
+    else
+      log_info "Adding user:$(whoami) to $GROUP group";
+      sudo usermod -a -G $GROUP $(whoami);
+    fi
+  done
+}
+
+step_install_cuda() {
+  if ! [ -z "$(lspci | grep -i nvidia)" ]; then
+    prompt_YESno install_cuda "NVIDIA GPU detected. Install CUDA?"
+    if [[ $install_cuda == "y" ]]; then
+      # add Nvidia package sources
+      wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+      sudo dpkg -i cuda-keyring_1.1-1_all.deb
+      sudo apt-get update
+      rm cuda-keyring_1.1-1_all.deb  # clean up our divots
+
+      # install CUDA
+      if [ -z "$(uname -a | grep PREEMPT_RT)" ]; then
+        sudo apt-get install cuda-toolkit
+      else
+        sudo IGNORE_PREEMPT_RT_PRESENCE=1 apt-get install cuda-toolkit
+      fi
+
+      # add CUDA paths to envars in .bashrc
+      echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' >> $HOME/.bashrc
+      echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64' >> $HOME/.bashrc
+    fi
+  fi
+}
+
 log_space
 log_info "Starting Clearpath Robotics Computer Installer"
 log_space
@@ -523,34 +573,9 @@ if [ ! "$EUID" -eq 0 ]; then
   grep -qxF "source /etc/clearpath/setup.bash" ~/.bashrc || echo "source /etc/clearpath/setup.bash" >> ~/.bashrc
   log_done "Setting up Clearpath environment"
 
+  step_install_cuda
 
-  log_info "Setting up groups\e[0m"
-
-  if [ $(getent group video) ]; then
-    log_info "video group already exists";
-  else
-    log_info "Adding video group";
-    sudo addgroup video;
-  fi
-  if id -nGz "$(whoami)" | grep -qzxF "video"; then
-    log_info "User:$(whoami) is already in video group";
-  else
-    log_info "Adding user:$(whoami) to video group";
-    sudo usermod -a -G video $(whoami);
-  fi
-
-  if [ $(getent group flirimaging) ]; then
-    log_info "flirimaging group already exists";
-  else
-    log_info "Adding flirimaging group";
-    sudo addgroup flirimaging;
-  fi
-  if id -nGz "$(whoami)" | grep -qzxF "flirimaging"; then
-    log_info "User:$(whoami) is already in flirimaging group";
-  else
-    log_info "Adding user:$(whoami) to flirimaging group";
-    sudo usermod -a -G flirimaging $(whoami);
-  fi
+  step_setup_groups
 
   val=$(< /sys/module/usbcore/parameters/usbfs_memory_mb)
   if [ "$val" -lt "2048" ]; then
