@@ -423,16 +423,16 @@ step_setup_realtime() {
   sudo apt -y install linux-image-realtime
 
   # configure realtime limits
-  LIMITS="@realtime soft rtprio 99
-    @realtime soft priority 99
-    @realtime soft memlock unlimited
-    @realtime hard rtprio 99
-    @realtime hard priority 99
-    @realtime hard memlock unlimited"
+  declare -a limits=("@realtime soft rtprio 99"
+    "@realtime soft priority 99"
+    "@realtime soft memlock unlimited"
+    "@realtime hard rtprio 99"
+    "@realtime hard priority 99"
+    "@realtime hard memlock unlimited")
 
-  for limit in ${LIMITS}; do
+  for limit in "${limits[@]}"; do
     if ! [ -z "$(cat /etc/security/limits.conf) | grep \"$limit\"" ]; then
-      sudo bash -e "cat \"$limit\" >> /etc/security/limits.conf"
+      sudo bash -e "echo \"$limit\" >> /etc/security/limits.conf"
     fi
   done
 }
