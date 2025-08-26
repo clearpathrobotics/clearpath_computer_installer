@@ -431,7 +431,7 @@ step_setup_realtime() {
     "@realtime hard memlock unlimited")
 
   for limit in "${limits[@]}"; do
-    if ! [ -z "$(cat /etc/security/limits.conf) | grep \"$limit\"" ]; then
+    if [ -z "$(cat /etc/security/limits.conf) | grep \"$limit\"" ]; then
       sudo bash -e "echo \"$limit\" >> /etc/security/limits.conf"
     fi
   done
