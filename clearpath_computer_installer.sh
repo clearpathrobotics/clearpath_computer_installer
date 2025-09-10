@@ -233,8 +233,28 @@ step_setup_osrf_packge_server() {
     sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
-    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
-    curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb"
+    # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
+    export ROS_APT_SOURCE_VERSION=$(git ls-remote --tags https://github.com/ros-infrastructure/ros-apt-source.git | \
+      awk -F/ '{print $NF}' | \
+      sort -V | \
+      tail -n 1
+    )
+
+    if [ -z "${ROS_APT_SOURCE_VERSION}" ]; then
+      # Just in case the above fails (e.g. more rate-limiting), keep a known fall-back version
+      # but log this event so we can keep tabs on it if/how often this occurs.
+      log_warn "Failed to fetch latest apt-source version from GitHub. Falling back to 1.1.0"
+      export ROS_APT_SOURCE_VERSION="1.1.0"
+    fi
+
+    # URL should resolve to something like https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.1.0/ros2-apt-source_1.1.0.noble_all.deb
+    GH_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_VERSION}_all.deb"
+    wget -L -o /tmp/ros2-apt-source.deb "${GH_URL}"
+    ret=$?
+    if [ "$ret" != "0" ] ; then
+      log_error "Failed to download OSRF apt sources from ${GH_URL}: code ${ret}. Exiting"
+      exit 0
+    fi
     sudo apt install /tmp/ros2-apt-source.deb
     sudo rm /tmp/ros2-apt-source.deb
 
@@ -349,7 +369,7 @@ step_setup_groups() {
       log_info "Adding $GROUP group";
       sudo addgroup $GROUP;
     fi
-  
+
     # 2) add the user to the group if necessary
     if id -nGz "$(whoami)" | grep -qzxF "$GROUP"; then
       log_info "User:$(whoami) is already in $GROUP group";
