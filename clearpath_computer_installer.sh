@@ -233,12 +233,16 @@ step_setup_osrf_packge_server() {
     sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
-    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+    # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
+    export ROS_APT_SOURCE_VERSION=$(git ls-remote --tags https://github.com/ros-infrastructure/ros-apt-source.git | \
+      awk -F/ '{print $NF}' | \
+      sort -V | \
+      tail -n 1
+    )
 
     if [ -z "${ROS_APT_SOURCE_VERSION}" ]; then
-      # some users may encounter this error with the above:
-      #    "API rate limit exceeded for <IP>. [...]"
-      # If this happens, just use a known version.
+      # Just in case the above fails (e.g. more rate-limiting), keep a known fall-back version
+      # but log this event so we can keep tabs on it if/how often this occurs.
       log_warn "Failed to fetch latest apt-source version from GitHub. Falling back to 1.1.0"
       export ROS_APT_SOURCE_VERSION="1.1.0"
     fi
