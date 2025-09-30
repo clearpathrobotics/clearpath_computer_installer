@@ -633,7 +633,10 @@ if [ ! "$EUID" -eq 0 ]; then
     chmod +x /home/$USER/setup-lv426.sh
   fi
 
-  log_done "Clearpath Computer Installer Complete"
+  log_done $'Clearpath Computer Installer Complete\n
+  To finalize installation please run the following command:
+      sudo systemctl daemon-reload && sudo systemctl start clearpath-robot
+  or reboot the computer.'
   log_info "To continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup and follow the instructions"
   log_space
 else
