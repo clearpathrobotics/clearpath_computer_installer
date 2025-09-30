@@ -249,7 +249,7 @@ step_setup_osrf_packge_server() {
 
     # URL should resolve to something like https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.1.0/ros2-apt-source_1.1.0.noble_all.deb
     GH_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_VERSION}_all.deb"
-    wget -L -o /tmp/ros2-apt-source.deb "${GH_URL}"
+    wget -O /tmp/ros2-apt-source.deb "${GH_URL}"
     ret=$?
     if [ "$ret" != "0" ] ; then
       log_error "Failed to download OSRF apt sources from ${GH_URL}: code ${ret}. Exiting"
