@@ -625,6 +625,14 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
 
   log_done "Setting up groups"
+
+  # Download wireless configuration script if gitlab is reachable
+  if ping -c1 gitlab.clearpathrobotics.com > /dev/null 2>&1; then
+    log_info "Downloading wireless configuration script for use later"
+    wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
+    chmod +x /home/$USER/setup-lv426.sh
+  fi
+
   log_done "Clearpath Computer Installer Complete"
   log_info "To continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup and follow the instructions"
   log_space
@@ -636,11 +644,4 @@ fi
 # Re-enable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
-fi
-
-
-if ping -c1 gitlab.clearpathrobotics.com > /dev/null 2>&1; then
-  log_info "Downloading wireless configuration script for use later"
-  wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
-  chmod +x /home/$USER/setup-lv426.sh
 fi
