@@ -230,7 +230,7 @@ step_setup_osrf_packge_server() {
   else
     sudo apt -y -qq install software-properties-common
     sudo add-apt-repository universe -y
-    sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
+    sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl wget
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
     # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
