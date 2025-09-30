@@ -639,7 +639,7 @@ if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
 fi
 
 
-if ping -c1 gitlab.clearpathrobotics.com; then
+if ping -c1 gitlab.clearpathrobotics.com > /dev/null 2>&1; then
   log_info "Downloading wireless configuration script for use later"
   wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
   chmod +x /home/$USER/setup-lv426.sh
