@@ -575,7 +575,11 @@ if [ ! "$EUID" -eq 0 ]; then
 
   prompt_YESno install_service "Would you like to install Clearpath services?"
   if [[ $install_service == "y" ]]; then
-    log_info "Installing clearpath robot service"
+    # Generate launch files so that symlinks can be successfully created in the next step
+    log_info "Generating launch files needed for Clearpath services"
+    ros2 run clearpath_generator_robot generate_launch
+
+    log_info "Installing Clearpath robot service"
     ros2 run clearpath_robot install
 
     if [ $? -eq 0 ]; then
