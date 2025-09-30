@@ -471,6 +471,7 @@ if [ ! "$EUID" -eq 0 ]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
       log_info "Creating default robot YAML for ${platform}"
       sudo cp /opt/ros/$ROS_DISTRO_MANUAL/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         log_error "Clearpath robot YAML, exiting"
