@@ -230,7 +230,7 @@ step_setup_osrf_packge_server() {
   else
     sudo apt -y -qq install software-properties-common
     sudo add-apt-repository universe -y
-    sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl -y
+    sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl wget
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
     # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
@@ -249,7 +249,7 @@ step_setup_osrf_packge_server() {
 
     # URL should resolve to something like https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.1.0/ros2-apt-source_1.1.0.noble_all.deb
     GH_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_VERSION}_all.deb"
-    wget -L -o /tmp/ros2-apt-source.deb "${GH_URL}"
+    wget -O /tmp/ros2-apt-source.deb "${GH_URL}"
     ret=$?
     if [ "$ret" != "0" ] ; then
       log_error "Failed to download OSRF apt sources from ${GH_URL}: code ${ret}. Exiting"
@@ -471,6 +471,7 @@ if [ ! "$EUID" -eq 0 ]; then
       sudo mv /etc/clearpath/robot.yaml /etc/clearpath/robot.yaml.backup.$(date +"%Y%m%d%H%M%S")
       log_info "Creating default robot YAML for ${platform}"
       sudo cp /opt/ros/$ROS_DISTRO_MANUAL/share/clearpath_config/sample/${platform}_default.yaml /etc/clearpath/robot.yaml
+      sudo chown "$(id -u -n):$(id -g -n)" /etc/clearpath/robot.yaml
       # Check if sources were added
       if [ ! -e /etc/clearpath/robot.yaml ]; then
         log_error "Clearpath robot YAML, exiting"
@@ -574,7 +575,11 @@ if [ ! "$EUID" -eq 0 ]; then
 
   prompt_YESno install_service "Would you like to install Clearpath services?"
   if [[ $install_service == "y" ]]; then
-    log_info "Installing clearpath robot service"
+    # Generate launch files so that symlinks can be successfully created in the next step
+    log_info "Generating launch files needed for Clearpath services"
+    ros2 run clearpath_generator_robot generate_launch
+
+    log_info "Installing Clearpath robot service"
     ros2 run clearpath_robot install
 
     if [ $? -eq 0 ]; then
@@ -620,7 +625,18 @@ if [ ! "$EUID" -eq 0 ]; then
   fi
 
   log_done "Setting up groups"
-  log_done "Clearpath Computer Installer Complete"
+
+  # Download wireless configuration script if gitlab is reachable
+  if ping -c1 gitlab.clearpathrobotics.com > /dev/null 2>&1; then
+    log_info "Downloading wireless configuration script for use later"
+    wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
+    chmod +x /home/$USER/setup-lv426.sh
+  fi
+
+  log_done $'Clearpath Computer Installer Complete\n
+  To finalize installation please run the following command:
+      sudo systemctl daemon-reload && sudo systemctl start clearpath-robot
+  or reboot the computer.'
   log_info "To continue installation visit: https://docs.clearpathrobotics.com/docs/ros/networking/computer_setup and follow the instructions"
   log_space
 else
@@ -631,11 +647,4 @@ fi
 # Re-enable messages about restarting services in systems with needrestart installed
 if [ -e /etc/needrestart/conf.d/10-auto-cp.conf ]; then
   sudo rm /etc/needrestart/conf.d/10-auto-cp.conf
-fi
-
-
-if ping -c1 gitlab.clearpathrobotics.com; then
-  log_info "Downloading wireless configuration script for use later"
-  wget https://gitlab.clearpathrobotics.com/research/lv426-netplan/-/raw/main/configure-lv426.sh -O /home/$USER/setup-lv426.sh
-  chmod +x /home/$USER/setup-lv426.sh
 fi
