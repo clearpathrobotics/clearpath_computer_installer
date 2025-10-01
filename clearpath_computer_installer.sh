@@ -404,6 +404,39 @@ step_install_cuda() {
   fi
 }
 
+step_setup_realtime() {
+  # create the realtime group if needed
+  if [ $(getent group realtime) ]; then
+    log_info "realtime group already exists";
+  else
+    log_info "Adding realtime group";
+    sudo addgroup realtime;
+  fi
+  if id -nGz "$(whoami)" | grep -qzxF "realtime"; then
+    log_info "User:$(whoami) is already in realtime group";
+  else
+    log_info "Adding user:$(whoami) to realtime group";
+    sudo usermod -a -G realtime $(whoami);
+  fi
+
+  # install the realtime kernel
+  sudo apt -y install linux-image-realtime
+
+  # configure realtime limits
+  declare -a limits=("@realtime soft rtprio 99"
+    "@realtime soft priority 99"
+    "@realtime soft memlock unlimited"
+    "@realtime hard rtprio 99"
+    "@realtime hard priority 99"
+    "@realtime hard memlock unlimited")
+
+  for limit in "${limits[@]}"; do
+    if [ -z "$(cat /etc/security/limits.conf) | grep \"$limit\"" ]; then
+      sudo bash -e "echo \"$limit\" >> /etc/security/limits.conf"
+    fi
+  done
+}
+
 log_space
 log_info "Starting Clearpath Robotics Computer Installer"
 log_space
@@ -449,6 +482,11 @@ if [ ! "$EUID" -eq 0 ]; then
   log_info "Updating rosdep"
   rosdep -q update
   log_done "Updating rosdep"
+
+  prompt_YESno configure_realtime "Would you like to install the realtime linux kernel (recommended)?"
+  if [[ "$configure_realtime" == "y" ]]; then
+    step_setup_realtime
+  fi
 
   # Check if Clearpath folder exists
   if [ -d /etc/clearpath/ ]; then
