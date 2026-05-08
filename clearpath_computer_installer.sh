@@ -213,7 +213,7 @@ step_get_os_and_ros_version() {
 }
 
 # Setup Open Robotics package server to install ROS 2
-step_setup_osrf_packge_server() {
+step_setup_osrf_package_server() {
   log_info "Setup Open Robotics package server to install ROS 2 $ROS_DISTRO_MANUAL"
 
   if [ -e /etc/apt/sources.list.d/ros2.list ]; then
@@ -269,7 +269,7 @@ step_setup_osrf_packge_server() {
 }
 
 # Setup Clearpath Robotics package server
-step_setup_cpr_packge_server() {
+step_setup_cpr_package_server() {
   log_info "Setup Clearpath Robotics package server"
 
   # Check if Clearpath sources are already installed
@@ -433,9 +433,9 @@ if [ -d /etc/needrestart/conf.d ]; then
   sudo bash -c "echo '\$nrconf{restart} = '\''a'\'';' > /etc/needrestart/conf.d/10-auto-cp.conf"
 fi
 
-step_setup_osrf_packge_server
+step_setup_osrf_package_server
 
-step_setup_cpr_packge_server
+step_setup_cpr_package_server
 
 step_install_ros_packages
 
