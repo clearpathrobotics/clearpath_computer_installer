@@ -5,16 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Allow running the heavy end-to-end installer job on demand.
+  # Allow manual runs from the Actions tab.
   workflow_dispatch:
-    inputs:
-      codename:
-        description: "Ubuntu codename to test the installer against"
-        type: choice
-        default: noble
-        options:
-          - noble
-          - jammy
 
 permissions:
   contents: read
@@ -43,11 +35,14 @@ jobs:
           shellcheck --severity=warning --shell=bash "${scripts[@]}"
 
   installer-e2e:
-    name: Installer end-to-end (${{ github.event.inputs.codename || 'noble' }})
-    # Heavy: boots systemd in a privileged container and pulls the full ROS 2 +
-    # Clearpath package set. Only run on manual dispatch to avoid gating PRs.
-    if: github.event_name == 'workflow_dispatch'
+    name: Installer end-to-end (${{ matrix.codename }})
+    # Boots systemd in a privileged container and pulls the full ROS 2 +
+    # Clearpath package set. Runs on every push and pull request.
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        codename: [noble, jammy]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,4 +50,4 @@ jobs:
       - name: Run installer in systemd container
         run: |
           chmod +x test/run_installer_test.sh
-          test/run_installer_test.sh "${{ github.event.inputs.codename || 'noble' }}"
+          test/run_installer_test.sh "${{ matrix.codename }}"
