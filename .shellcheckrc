@@ -1,0 +1,20 @@
+# ShellCheck configuration for clearpath_computer_installer.
+#
+# The codes below are baselined: they correspond to existing, intentional
+# patterns in the installer scripts rather than real defects. Keeping them
+# disabled lets CI fail on NEW issues while staying green on the current code.
+#
+# SC2154 - Variables are populated indirectly by the prompt_* helper functions
+#          via eval, so ShellCheck cannot see the assignment.
+# SC2254 - Numeric case patterns ($ROBOT_*) are matched intentionally.
+# SC1090 - `source /opt/ros/$ROS_DISTRO/setup.bash` cannot be followed statically.
+disable=SC2154,SC2254,SC1090
+
+# Pre-existing findings in the legacy installer logic, baselined so CI gates on
+# NEW regressions only. These are candidates for a future dedicated cleanup:
+# SC2155 - export + command substitution masks the return value.
+# SC2046 - unquoted command substitutions that could word-split.
+# SC2024 - `sudo echo > file` redirects as the calling user, not root
+#          (works today only because /etc/clearpath is created mode 777).
+disable=SC2155,SC2046,SC2024
+

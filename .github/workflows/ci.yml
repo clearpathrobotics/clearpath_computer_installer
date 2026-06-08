@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allow running the heavy end-to-end installer job on demand.
+  workflow_dispatch:
+    inputs:
+      codename:
+        description: "Ubuntu codename to test the installer against"
+        type: choice
+        default: noble
+        options:
+          - noble
+          - jammy
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Lint shell scripts
+        run: |
+          shopt -s globstar nullglob
+          mapfile -t scripts < <(git ls-files '*.sh')
+          if [ ${#scripts[@]} -eq 0 ]; then
+            echo "No shell scripts found"; exit 0
+          fi
+          printf 'Linting:\n%s\n' "${scripts[*]}"
+          # The installer relies on sourcing/runtime-defined behaviour in places;
+          # keep the gate meaningful but do not fail on style-only notices.
+          shellcheck --severity=warning --shell=bash "${scripts[@]}"
+
+  installer-e2e:
+    name: Installer end-to-end (${{ github.event.inputs.codename || 'noble' }})
+    # Heavy: boots systemd in a privileged container and pulls the full ROS 2 +
+    # Clearpath package set. Only run on manual dispatch to avoid gating PRs.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run installer in systemd container
+        run: |
+          chmod +x test/run_installer_test.sh
+          test/run_installer_test.sh "${{ github.event.inputs.codename || 'noble' }}"
