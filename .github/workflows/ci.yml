@@ -12,27 +12,20 @@ permissions:
   contents: read
 
 jobs:
-  shellcheck:
-    name: ShellCheck
+  pre-commit:
+    name: pre-commit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
 
-      - name: Lint shell scripts
-        run: |
-          shopt -s globstar nullglob
-          mapfile -t scripts < <(git ls-files '*.sh')
-          if [ ${#scripts[@]} -eq 0 ]; then
-            echo "No shell scripts found"; exit 0
-          fi
-          printf 'Linting:\n%s\n' "${scripts[*]}"
-          # The installer relies on sourcing/runtime-defined behaviour in places;
-          # keep the gate meaningful but do not fail on style-only notices.
-          shellcheck --severity=warning --shell=bash "${scripts[@]}"
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
 
   installer-e2e:
     name: Installer end-to-end (${{ matrix.codename }})
