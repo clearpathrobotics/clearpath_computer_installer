@@ -335,16 +335,21 @@ step_setup_rosdep() {
 
 setup_change_net_timeout() {
   log_info "Configuring network service, if needed"
-  # Check if the service file exists
+  # Only configure the service if it is installed
   if [ -e "/lib/systemd/system/systemd-networkd-wait-online.service" ]; then
-    # Check if timeout is present in the service file
-    if grep -q "timeout=30" "/lib/systemd/system/systemd-networkd-wait-online.service"; then
-      log_info "Timeout is already present in /lib/systemd/system/systemd-networkd-wait-online.service"
-    else
-      # Add --timeout=30 after ExecStart=/lib/systemd/systemd-networkd-wait-online
-      sudo sed -i '/^ExecStart/ s/$/ --timeout=30/' "/lib/systemd/system/systemd-networkd-wait-online.service"
-      log_info "Timeout added to /lib/systemd/system/systemd-networkd-wait-online.service"
-    fi
+    # Use a systemd drop-in override instead of editing the package-owned unit
+    # file so the change survives package updates. The empty ExecStart= clears
+    # the inherited command before re-specifying it with the timeout.
+    local override_dir="/etc/systemd/system/systemd-networkd-wait-online.service.d"
+    local override_file="${override_dir}/override.conf"
+    sudo mkdir -p "${override_dir}"
+    sudo tee "${override_file}" > /dev/null <<'EOF'
+[Service]
+ExecStart=
+ExecStart=/lib/systemd/systemd-networkd-wait-online --timeout=30
+EOF
+    sudo systemctl daemon-reload
+    log_info "Timeout drop-in written to ${override_file}"
   else
     log_warn "Service file /lib/systemd/system/systemd-networkd-wait-online.service not found."
   fi
