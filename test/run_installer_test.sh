@@ -9,13 +9,14 @@
 #   UBUNTU_CODENAME   noble (Jazzy, default) or jammy (Humble)
 #
 # Environment overrides:
-#   ROBOT_CHOICE   Numeric platform selection fed to the installer's first
-#                  prompt (the installer hardcodes its internal default, so this
-#                  is supplied via stdin, not the environment).
-#                  1=A300 2=A200 3=J100(default) 4=W200 5=R100
+#   ROBOT_CHOICE   Numeric platform selection passed to the installer via the
+#                  ROBOT_CHOICE environment variable.
+#                  1=A300 2=A200 3=J100 4=W200 5=R100
 #                  6=DD100 7=DD150 8=DO100 9=DO150
-#   SERIAL         Robot serial digits fed to the installer prompt.
-#                  4 digits for most platforms, 5 digits for A300. Default 0001.
+#                  Default: 1 (A300) on noble, 3 (J100) on jammy.
+#   SERIAL         Robot serial digits passed via the SERIAL_NUMBER env var.
+#                  4 digits for most platforms, 5 digits for A300.
+#                  Default: 00001 on noble, 0001 on jammy.
 #   KEEP           If set to 1, leave the container running for inspection.
 #
 # Notes:
@@ -28,8 +29,16 @@
 set -euo pipefail
 
 CODENAME="${1:-noble}"
-ROBOT_CHOICE="${ROBOT_CHOICE:-3}"
-SERIAL="${SERIAL:-0001}"
+
+# A300 is only supported on Jazzy (noble); fall back to J100 on Humble (jammy).
+if [[ "${CODENAME}" == "noble" ]]; then
+  ROBOT_CHOICE="${ROBOT_CHOICE:-1}"   # A300
+  SERIAL="${SERIAL:-00001}"            # 5-digit serial
+else
+  ROBOT_CHOICE="${ROBOT_CHOICE:-3}"   # J100
+  SERIAL="${SERIAL:-0001}"             # 4-digit serial
+fi
+
 # Must match system.username in robot.yaml (default 'robot'), which the
 # clearpath-*.service units run as (User=robot).
 USERNAME="robot"
@@ -67,13 +76,16 @@ for _ in $(seq 1 60); do
 done
 
 echo "==> Running installer (ROBOT_CHOICE=${ROBOT_CHOICE}, SERIAL=${SERIAL})"
-# The installer reads the platform selection and the serial number from stdin
-# (the platform choice cannot be set via the environment), so feed both lines.
+# Inputs are passed via environment variables (ROBOT_CHOICE / SERIAL_NUMBER /
+# AUTO_YES) so the run is fully non-interactive. stdin is redirected from
+# /dev/null so any stray read returns immediately instead of hanging.
 set +e
-docker exec -i -u "${USERNAME}" \
+docker exec -u "${USERNAME}" \
     -e AUTO_YES=1 \
+    -e ROBOT_CHOICE="${ROBOT_CHOICE}" \
+    -e SERIAL_NUMBER="${SERIAL}" \
     "${CONTAINER}" \
-    bash -lc 'cd ~/installer && printf "%s\n%s\n" "'"${ROBOT_CHOICE}"'" "'"${SERIAL}"'" | bash -e clearpath_computer_installer.sh'
+    bash -lc 'cd ~/installer && bash -e clearpath_computer_installer.sh < /dev/null'
 rc=$?
 set -e
 
