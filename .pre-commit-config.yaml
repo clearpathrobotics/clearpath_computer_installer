@@ -1,0 +1,23 @@
+# Pre-commit hooks for clearpath_computer_installer.
+# Install once with:  pip install pre-commit && pre-commit install
+# Run on all files:    pre-commit run --all-files
+#
+# The shellcheck hook mirrors the ShellCheck job in .github/workflows/ci.yml and
+# honours the baselined codes in .shellcheckrc.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-executables-have-shebangs
+      - id: check-yaml
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning, --shell=bash]

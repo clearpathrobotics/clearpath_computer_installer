@@ -144,7 +144,9 @@ ROBOT_DINGO_DD100=6
 ROBOT_DINGO_DD150=7
 ROBOT_DINGO_DO100=8
 ROBOT_DINGO_DO150=9
-ROBOT_CHOICE=-1
+# Honour ROBOT_CHOICE from the environment for non-interactive installs;
+# default to -1 (undefined) so the prompt is shown when it is unset.
+ROBOT_CHOICE=${ROBOT_CHOICE:--1}
 
 # Get the platform model from the user
 step_get_platform_model() {
@@ -397,9 +399,9 @@ step_install_cuda() {
 
       # install CUDA
       if [ -z "$(uname -a | grep PREEMPT_RT)" ]; then
-        sudo apt-get install cuda-toolkit
+        sudo apt-get install -y cuda-toolkit
       else
-        sudo IGNORE_PREEMPT_RT_PRESENCE=1 apt-get install cuda-toolkit
+        sudo IGNORE_PREEMPT_RT_PRESENCE=1 apt-get install -y cuda-toolkit
       fi
 
       # add CUDA paths to envars in .bashrc
@@ -501,28 +503,33 @@ if [ ! "$EUID" -eq 0 ]; then
   while true; do
     # A300 uses 5 digit serial numbers, others uses 4 digit serial numbers
     if [[ $platform == "a300" ]]; then
-      log_info "Please enter the serial number of the robot (Only last 5 digits, the platform model will be automatically added):"
-      read serial_number
-      # Regular expression to match 5 numbers
+      serial_prompt="Please enter the serial number of the robot (Only last 5 digits, the platform model will be automatically added):"
       pattern='^[0-9]{5}$'
-
-      if [[ $serial_number =~ $pattern ]]; then
-        log_info "Serial number is in the correct format."
-        break
-      else
-        log_error "Serial number is not in the correct format. It should consist of exactly 5 numbers."
-      fi
+      serial_digits=5
     else
-      log_info "Please enter the serial number of the robot (Only last 4 digits and omit the leading digits, the platform model will be automatically added):"
-      read serial_number
-      # Regular expression to match 4 numbers
+      serial_prompt="Please enter the serial number of the robot (Only last 4 digits and omit the leading digits, the platform model will be automatically added):"
       pattern='^[0-9]{4}$'
+      serial_digits=4
+    fi
 
-      if [[ $serial_number =~ $pattern ]]; then
-        log_info "Serial number is in the correct format."
-        break
-      else
-        log_error "Serial number is not in the correct format. It should consist of exactly 4 numbers."
+    # Allow non-interactive installs to supply the serial via SERIAL_NUMBER.
+    if [[ -n $SERIAL_NUMBER ]]; then
+      serial_number=$SERIAL_NUMBER
+      echo "Using serial number from SERIAL_NUMBER environment variable: $serial_number"
+    else
+      log_info "$serial_prompt"
+      read serial_number
+    fi
+
+    if [[ $serial_number =~ $pattern ]]; then
+      log_info "Serial number is in the correct format."
+      break
+    else
+      log_error "Serial number is not in the correct format. It should consist of exactly $serial_digits numbers."
+      # Don't loop forever on a bad value provided via the environment.
+      if [[ -n $SERIAL_NUMBER ]]; then
+        log_error "SERIAL_NUMBER environment variable is invalid, exiting"
+        exit 1
       fi
     fi
 

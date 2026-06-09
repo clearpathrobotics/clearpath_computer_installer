@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+
+  installer-e2e:
+    name: Installer end-to-end (${{ matrix.codename }})
+    # Boots systemd in a privileged container and pulls the full ROS 2 +
+    # Clearpath package set. Runs on every push and pull request.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        codename: [noble, jammy]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run installer in systemd container
+        run: |
+          chmod +x test/run_installer_test.sh
+          test/run_installer_test.sh "${{ matrix.codename }}"
