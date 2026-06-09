@@ -17,4 +17,3 @@ disable=SC2154,SC2254,SC1090
 # SC2024 - `sudo echo > file` redirects as the calling user, not root
 #          (works today only because /etc/clearpath is created mode 777).
 disable=SC2155,SC2046,SC2024
-

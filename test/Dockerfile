@@ -14,6 +14,10 @@ FROM ubuntu:${UBUNTU_CODENAME}
 ENV DEBIAN_FRONTEND=noninteractive
 ENV container=docker
 
+# Pre-configure tzdata so it never prompts (systemd boots a fresh env that
+# does not inherit the DEBIAN_FRONTEND=noninteractive set above).
+RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime
+
 # Minimal tooling the installer expects to exist early, plus systemd + sudo.
 # NOTE: apt lists are intentionally NOT purged. The installer installs
 # software-properties-common before its first `apt update`, which mirrors a

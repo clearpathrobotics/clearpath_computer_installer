@@ -81,6 +81,7 @@ echo "==> Running installer (ROBOT_CHOICE=${ROBOT_CHOICE}, SERIAL=${SERIAL})"
 # /dev/null so any stray read returns immediately instead of hanging.
 set +e
 docker exec -u "${USERNAME}" \
+    -e DEBIAN_FRONTEND=noninteractive \
     -e AUTO_YES=1 \
     -e ROBOT_CHOICE="${ROBOT_CHOICE}" \
     -e SERIAL_NUMBER="${SERIAL}" \
