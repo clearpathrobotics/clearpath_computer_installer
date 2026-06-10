@@ -18,3 +18,18 @@ Cockpit only install (available for Noble / Jazzy only):
 ```
 wget -c https://raw.githubusercontent.com/clearpathrobotics/clearpath_computer_installer/main/cockpit_installer.sh && bash -e cockpit_installer.sh
 ```
+
+## Development
+
+This repository uses [pre-commit](https://pre-commit.com/) to run linting checks (including ShellCheck) before each commit.
+
+Install the hooks once:
+```
+sudo apt install pre-commit
+pre-commit install
+```
+
+Run the hooks against all files:
+```
+pre-commit run --all-files
+```
