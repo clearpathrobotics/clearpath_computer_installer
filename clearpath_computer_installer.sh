@@ -341,17 +341,27 @@ setup_change_net_timeout() {
   if [ -e "/lib/systemd/system/systemd-networkd-wait-online.service" ]; then
     # Use a systemd drop-in override instead of editing the package-owned unit
     # file so the change survives package updates. The empty ExecStart= clears
-    # the inherited command before re-specifying it with the timeout.
+    # the inherited command before re-specifying it.
+    #
+    # By default the netplan-generated drop-in lists every managed interface,
+    # and wait-online blocks until *all* of them are up. Any unplugged port
+    # leaves the service stuck for the full timeout and it fails the boot.
+    # Using --any returns as soon as *any* interface is routable, so unused
+    # ports are ignored and boot proceeds the moment real connectivity is up.
+    # This also makes network-online.target ordering actually meaningful
+    # instead of failing every boot. 'br0' will always be the first routable
+    # interface on Clearpath robots, so this doesn't cause any regressions in
+    # our expected behavior.
     local override_dir="/etc/systemd/system/systemd-networkd-wait-online.service.d"
-    local override_file="${override_dir}/override.conf"
+    local override_file="${override_dir}/99-wait-any.conf"
     sudo mkdir -p "${override_dir}"
     sudo tee "${override_file}" > /dev/null <<'EOF'
 [Service]
 ExecStart=
-ExecStart=/lib/systemd/systemd-networkd-wait-online --timeout=30
+ExecStart=/lib/systemd/systemd-networkd-wait-online --any -o routable
 EOF
     sudo systemctl daemon-reload
-    log_info "Timeout drop-in written to ${override_file}"
+    log_info "wait-online drop-in written to ${override_file}"
   else
     log_warn "Service file /lib/systemd/system/systemd-networkd-wait-online.service not found."
   fi
