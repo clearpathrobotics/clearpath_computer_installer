@@ -397,11 +397,22 @@ step_install_cuda() {
       sudo apt-get update
       rm cuda-keyring_1.1-1_all.deb  # clean up our divots
 
-      # install CUDA
+      # install CUDA toolkit
       if [ -z "$(uname -a | grep PREEMPT_RT)" ]; then
         sudo apt-get install -y cuda-toolkit
       else
         sudo IGNORE_PREEMPT_RT_PRESENCE=1 apt-get install -y cuda-toolkit
+      fi
+
+      # install NVIDIA driver kernel modules
+      # Turing and newer GPUs support the open kernel modules;
+      # older GPUs (Maxwell, Pascal, Volta) require the proprietary modules.
+      if lspci -nn | grep -i nvidia | grep -qE '\[10de:(1[e-f]|2[0-9a-f]|3[0-9a-f])[0-9a-f]{2}\]'; then
+        log_info "Turing or newer GPU detected, installing open kernel modules (nvidia-open)"
+        sudo apt-get install -y nvidia-open
+      else
+        log_info "Pre-Turing GPU detected, installing proprietary kernel modules"
+        sudo apt-get install -y cuda-drivers
       fi
 
       # add CUDA paths to envars in .bashrc
