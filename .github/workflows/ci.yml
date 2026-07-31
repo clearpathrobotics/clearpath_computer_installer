@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Nightly run at 06:00 UTC to catch upstream regressions (ROS/Clearpath apt sources, etc.).
+  schedule:
+    - cron: '0 6 * * *'
   # Allow manual runs from the Actions tab.
   workflow_dispatch:
 
@@ -44,3 +47,58 @@ jobs:
         run: |
           chmod +x test/run_installer_test.sh
           test/run_installer_test.sh "${{ matrix.codename }}"
+
+  nightly-failure-issue:
+    name: Open issue on scheduled failure
+    needs: [pre-commit, installer-e2e]
+    if: ${{ github.event_name == 'schedule' && failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Create or update tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Nightly CI failure on $(date -u +%Y-%m-%d)"
+          label="nightly-ci-failure"
+
+          # Ensure the label exists (ignore error if it already does).
+          gh label create "$label" \
+            --repo "$REPO" \
+            --color "b60205" \
+            --description "Automatically opened by the nightly CI workflow" \
+            2>/dev/null || true
+
+          body=$(cat <<EOF
+          The nightly scheduled CI run failed.
+
+          - Workflow run: $RUN_URL
+          - Commit: ${{ github.sha }}
+          - Triggered at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          One or more jobs reported \`failure\`. Please investigate.
+          EOF
+          )
+
+          # Reuse an already-open nightly-failure issue if one exists, otherwise open a new one.
+          existing=$(gh issue list \
+            --repo "$REPO" \
+            --state open \
+            --label "$label" \
+            --json number \
+            --jq '.[0].number')
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" --body "$body"
+          else
+            gh issue create \
+              --repo "$REPO" \
+              --title "$title" \
+              --label "$label" \
+              --body "$body"
+          fi
