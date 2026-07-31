@@ -235,22 +235,40 @@ step_setup_osrf_package_server() {
     sudo apt -y -qq update && sudo apt -y -qq upgrade && sudo apt -y -qq install curl wget
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
-    # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
-    export ROS_APT_SOURCE_VERSION=$(git ls-remote --tags https://github.com/ros-infrastructure/ros-apt-source.git | \
-      awk -F/ '{print $NF}' | \
-      sort -V | \
-      tail -n 1
-    )
+    # Prefer the releases API (a tag alone doesn't guarantee published .deb assets),
+    # but api.github.com has hit rate-limits before, so fall back to git ls-remote
+    # tags (stripping the peeled '^{}' refs) and finally a known-good version.
+    ROS_APT_SOURCE_VERSION=$(curl -sfL https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | \
+      grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"[^"]+"' | \
+      head -n 1 | \
+      sed -E 's/.*"([^"]+)"$/\1/')
 
     if [ -z "${ROS_APT_SOURCE_VERSION}" ]; then
-      # Just in case the above fails (e.g. more rate-limiting), keep a known fall-back version
-      # but log this event so we can keep tabs on it if/how often this occurs.
-      log_warn "Failed to fetch latest apt-source version from GitHub. Falling back to 1.1.0"
-      export ROS_APT_SOURCE_VERSION="1.1.0"
+      log_warn "Failed to fetch latest apt-source release from GitHub API. Falling back to git ls-remote tags."
+      ROS_APT_SOURCE_VERSION=$(git ls-remote --tags https://github.com/ros-infrastructure/ros-apt-source.git | \
+        awk -F/ '{print $NF}' | \
+        grep -v '\^{}$' | \
+        sort -V | \
+        tail -n 1
+      )
     fi
+
+    if [ -z "${ROS_APT_SOURCE_VERSION}" ]; then
+      log_warn "Failed to fetch latest apt-source version from GitHub. Falling back to 1.1.0"
+      ROS_APT_SOURCE_VERSION="1.1.0"
+    fi
+    export ROS_APT_SOURCE_VERSION
 
     # URL should resolve to something like https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.1.0/ros2-apt-source_1.1.0.noble_all.deb
     GH_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_VERSION}_all.deb"
+
+    # Verify the asset actually exists before wget-ing; if not, fall back to 1.1.0.
+    if ! curl -sfLI -o /dev/null "${GH_URL}"; then
+      log_warn "Asset not found at ${GH_URL}. Falling back to 1.1.0"
+      export ROS_APT_SOURCE_VERSION="1.1.0"
+      GH_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${UBUNTU_VERSION}_all.deb"
+    fi
+
     wget -O /tmp/ros2-apt-source.deb "${GH_URL}"
     ret=$?
     if [ "$ret" != "0" ] ; then
