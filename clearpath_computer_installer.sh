@@ -236,8 +236,10 @@ step_setup_osrf_package_server() {
 
     # See https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
     # We've had issues with api.github.com having rate-limiting issues, so use git ls-remote instead or curl
+    # Strip the peeled '^{}' refs that git ls-remote emits for annotated tags
     export ROS_APT_SOURCE_VERSION=$(git ls-remote --tags https://github.com/ros-infrastructure/ros-apt-source.git | \
       awk -F/ '{print $NF}' | \
+      grep -v '\^{}$' | \
       sort -V | \
       tail -n 1
     )
