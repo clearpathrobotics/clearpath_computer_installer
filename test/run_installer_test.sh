@@ -93,7 +93,7 @@ set -e
 echo "==> Installer exited with code ${rc}"
 echo "==> Verifying the network-timeout drop-in was created"
 docker exec "${CONTAINER}" bash -lc \
-    'cat /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf 2>/dev/null \
+    'cat /etc/systemd/system/systemd-networkd-wait-online.service.d/99-wait-any.conf 2>/dev/null \
         && echo "drop-in OK" || echo "drop-in MISSING"'
 
 if [[ "${KEEP:-0}" == "1" ]]; then
